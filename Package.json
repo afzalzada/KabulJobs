@@ -1,9 +1,6 @@
 {
   "name": "kabuljobs-scraper",
   "version": "1.0.0",
-  "description": "Job aggregator for KabulJobs",
-  "main": "scraper.js",
-  "scripts": {
-    "start": "node scraper.js"
-  }
+  "description": "Simple job data generator",
+  "main": "scraper.js"
 }
