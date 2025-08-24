@@ -18,8 +18,11 @@ async function scrapeACBARJobs() {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5',
-        'Connection': 'keep-alive'
-      }
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
+      },
+      // Use http adapter to avoid undici issues
+      adapter: 'http'
     });
     
     console.log('Successfully fetched ACBAR page');
@@ -121,9 +124,11 @@ async function scrapeACBARJobs() {
     console.log(`Found ${jobs.length} jobs from ACBAR`);
     return jobs;
   } catch (error) {
-    console.error('Error scraping ACBAR:', error);
-    console.error('Response status:', error.response?.status);
-    console.error('Response data:', error.response?.data);
+    console.error('Error scraping ACBAR:', error.message);
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', error.response.data);
+    }
     return [];
   }
 }
@@ -142,8 +147,11 @@ async function scrapeJobsAF() {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5',
-        'Connection': 'keep-alive'
-      }
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1'
+      },
+      // Use http adapter to avoid undici issues
+      adapter: 'http'
     });
     
     console.log('Successfully fetched jobs.af page');
@@ -192,9 +200,11 @@ async function scrapeJobsAF() {
     console.log(`Found ${jobs.length} jobs from jobs.af`);
     return jobs;
   } catch (error) {
-    console.error('Error scraping jobs.af:', error);
-    console.error('Response status:', error.response?.status);
-    console.error('Response data:', error.response?.data);
+    console.error('Error scraping jobs.af:', error.message);
+    if (error.response) {
+      console.error('Response status:', error.response.status);
+      console.error('Response data:', error.response.data);
+    }
     return [];
   }
 }
@@ -261,7 +271,7 @@ async function fetchAndSaveJobs() {
     console.log(`Successfully saved ${uniqueJobs.length} unique jobs to jobs-data.json`);
     
   } catch (error) {
-    console.error('Error in job aggregation:', error);
+    console.error('Error in job aggregation:', error.message);
     console.error('Stack trace:', error.stack);
     
     // Create fallback data even if scraping fails
