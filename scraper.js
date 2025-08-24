@@ -20,9 +20,7 @@ async function scrapeACBARJobs() {
         'Accept-Language': 'en-US,en;q=0.5',
         'Connection': 'keep-alive',
         'Upgrade-Insecure-Requests': '1'
-      },
-      // Use http adapter to avoid undici issues
-      adapter: 'http'
+      }
     });
     
     console.log('Successfully fetched ACBAR page');
@@ -149,9 +147,7 @@ async function scrapeJobsAF() {
         'Accept-Language': 'en-US,en;q=0.5',
         'Connection': 'keep-alive',
         'Upgrade-Insecure-Requests': '1'
-      },
-      // Use http adapter to avoid undici issues
-      adapter: 'http'
+      }
     });
     
     console.log('Successfully fetched jobs.af page');
