@@ -48,25 +48,25 @@ jobs:
       run: |
         if [ ! -f "jobs-data.json" ]; then
           echo "Creating initial jobs-data.json..."
-          cat > jobs-data.json << 'EOL'
-          {
-            "jobs": [],
-            "lastUpdated": "$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")",
-            "totalCount": 0,
-            "sources": {
-              "acbar": 0,
-              "jobsaf": 0
-            },
-            "warning": "This file will be automatically updated by the scraper. Initial file created manually."
-          }
-          EOL
+          cat > jobs-data.json << 'EOF'
+{
+  "jobs": [],
+  "lastUpdated": "$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")",
+  "totalCount": 0,
+  "sources": {
+    "acbar": 0,
+    "jobsaf": 0
+  },
+  "warning": "This file will be automatically updated by the scraper. Initial file created manually."
+}
+EOF
         fi
         
     - name: Create scraper script
       run: |
-        cat > scraper.js << 'EOL'
-        // [Your scraper.js content here]
-        EOL
+        cat > scraper.js << 'EOF'
+// [Your scraper.js content here]
+EOF
         
     - name: Run scraper
       run: |
