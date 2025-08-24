@@ -1,82 +1,76 @@
-name: Scrape Job Websites
+name: Update Job Data
 
 on:
   schedule:
-    # Run every 15 minutes
     - cron: '*/15 * * * *'
-  workflow_dispatch: # Allows manual triggering
+  workflow_dispatch:
 
 jobs:
-  scrape:
+  update:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-      with:
-        persist-credentials: false
-        
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'
-        
-    - name: Create package.json
-      run: |
-        cat > package.json << 'EOL'
-        {
-          "name": "kabuljobs-scraper",
-          "version": "1.0.0",
-          "description": "Job aggregator for KabulJobs",
-          "main": "scraper.js",
-          "scripts": {
-            "start": "node scraper.js"
-          },
-          "dependencies": {
-            "puppeteer": "^19.0.0"
-          },
-          "engines": {
-            "node": "16.x"
-          }
-        }
-        EOL
-        
-    - name: Install dependencies
-      run: |
-        npm install
-        
-    - name: Ensure jobs-data.json exists
-      run: |
-        if [ ! -f "jobs-data.json" ]; then
-          echo "Creating initial jobs-data.json..."
-          cat > jobs-data.json << 'EOF'
-{
-  "jobs": [],
-  "lastUpdated": "$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")",
-  "totalCount": 0,
-  "sources": {
-    "acbar": 0,
-    "jobsaf": 0
-  },
-  "warning": "This file will be automatically updated by the scraper. Initial file created manually."
-}
-EOF
-        fi
-        
-    - name: Create scraper script
-      run: |
-        cat > scraper.js << 'EOF'
-// [Your scraper.js content here]
-EOF
-        
-    - name: Run scraper
-      run: |
-        echo "Running scraper..."
-        node scraper.js
-        
-    - name: Commit and push changes
-      run: |
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
-        git add jobs-data.json
-        git commit -m "Update job data $(date)" || echo "No changes to commit"
-        git push
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      
+      - name: Create jobs-data.json
+        run: |
+          node -e "
+          const fs = require('fs');
+          const mockJobs = [
+            {
+              id: 'acbar-' + Date.now() + '-1',
+              title: 'Safeguarding Officer',
+              organization: 'AADA',
+              location: 'Kabul',
+              type: 'Full Time',
+              category: 'Health Care',
+              postedDate: new Date().toISOString().split('T')[0],
+              deadline: '2025-09-05',
+              source: 'acbar.org',
+              sourceUrl: 'https://www.acbar.org/jobs/123',
+              description: 'Organize and implement continuous training on child protection and gender-based violence for all staff and partners.',
+              requirements: ['Experience in safeguarding', 'Knowledge of child protection standards']
+            },
+            {
+              id: 'jobsaf-' + Date.now() + '-2',
+              title: 'Senior Accountant',
+              organization: 'UNICEF',
+              location: 'Kabul',
+              type: 'Contract',
+              category: 'Finance',
+              postedDate: new Date().toISOString().split('T')[0],
+              deadline: '2025-09-10',
+              source: 'jobs.af',
+              sourceUrl: 'https://www.jobs.af/job/456',
+              description: 'Oversee financial operations and ensure compliance with international accounting standards.',
+              requirements: ['Professional accounting qualification', 'Experience with ERP systems']
+            }
+          ];
+          
+          const jobsData = {
+            jobs: mockJobs,
+            lastUpdated: new Date().toISOString(),
+            totalCount: mockJobs.length,
+            sources: {
+              acbar: 1,
+              jobsaf: 1
+            },
+            warning: 'This is mock data. In a production system, this would be replaced with real scraped data.'
+          };
+          
+          fs.writeFileSync('jobs-data.json', JSON.stringify(jobsData, null, 2));
+          console.log('Successfully created jobs-data.json');
+          "
+      
+      - name: Commit and push
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add jobs-data.json
+          git commit -m "Update job data $(date)" || echo "No changes to commit"
+          git push
