@@ -81,58 +81,12 @@
             text-align: right;
             margin-top: 0.5rem;
         }
-        
-        .update-info {
-            background: linear-gradient(90deg, #f0f9ff, #e0f2fe, #bae6fd);
-            border-radius: 8px;
-            padding: 12px;
-            margin: 16px 0;
-        }
-        
-        .source-badge {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 9999px;
-        }
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div id="app"></div>
     
     <script>
-        // This would be populated by the backend scraper
-        // In production, this data would come from /api/jobs endpoint
-        const mockJobs = [
-            {
-                id: 1,
-                title: "Safeguarding Officer",
-                organization: "AADA",
-                location: "Kabul",
-                type: "Full Time",
-                category: "Health Care",
-                postedDate: "2025-08-24",
-                deadline: "2025-09-05",
-                source: "acbar.org",
-                sourceUrl: "https://www.acbar.org/job/123",
-                description: "Organize and implement continuous training on child protection and gender-based violence for all staff and partners.",
-                requirements: ["Experience in safeguarding", "Knowledge of child protection standards"]
-            },
-            {
-                id: 2,
-                title: "Senior Accountant",
-                organization: "UNICEF",
-                location: "Kabul",
-                type: "Contract",
-                category: "Finance",
-                postedDate: "2025-08-20",
-                deadline: "2025-09-10",
-                source: "jobs.af",
-                sourceUrl: "https://www.jobs.af/job/456",
-                description: "Oversee financial operations and ensure compliance with international accounting standards.",
-                requirements: ["Professional accounting qualification", "Experience with ERP systems"]
-            }
-        ];
-
         class KabulJobsApp {
             constructor() {
                 this.jobs = [];
@@ -147,8 +101,8 @@
                 this.isLoading = true;
                 this.lastUpdated = new Date();
                 
-                // Use raw GitHub content URL when deployed
-                this.dataUrl = 'https://raw.githubusercontent.com/yourusername/kabuljobs/main/jobs-data.json';
+                // Use raw GitHub content URL
+                this.dataUrl = 'https://raw.githubusercontent.com/yourusername/kabuljobs-aggregator/main/jobs-data.json';
                 
                 this.initialize();
             }
@@ -176,21 +130,43 @@
 
             async loadJobs() {
                 try {
-                    // In production, fetch from the backend API
-                    // For now, use mock data
-                    this.jobs = mockJobs;
-                    this.lastUpdated = new Date();
-                    
-                    /* 
-                    // Production code would look like this:
                     const response = await fetch(this.dataUrl + '?t=' + new Date().getTime());
                     const data = await response.json();
                     this.jobs = data.jobs || [];
                     this.lastUpdated = data.lastUpdated ? new Date(data.lastUpdated) : new Date();
-                    */
                 } catch (error) {
                     console.error("Error loading jobs:", error);
-                    this.jobs = mockJobs;
+                    // Fallback to mock data if API fails
+                    this.jobs = [
+                        {
+                            id: 1,
+                            title: "Program Manager",
+                            organization: "ACBAR",
+                            location: "Kabul",
+                            type: "Full-time",
+                            category: "Management",
+                            postedDate: "2023-10-15",
+                            deadline: "2023-10-30",
+                            source: "acbar.org",
+                            sourceUrl: "https://www.acbar.org/jobs/",
+                            description: "Responsible for managing humanitarian programs across multiple provinces in Afghanistan.",
+                            requirements: ["Bachelor's degree in relevant field", "5+ years of experience in program management", "Fluency in Dari and Pashto"]
+                        },
+                        {
+                            id: 2,
+                            title: "Senior Accountant",
+                            organization: "UNICEF",
+                            location: "Kabul",
+                            type: "Contract",
+                            category: "Finance",
+                            postedDate: "2023-10-14",
+                            deadline: "2023-10-28",
+                            source: "jobs.af",
+                            sourceUrl: "https://www.jobs.af",
+                            description: "Oversee financial operations and ensure compliance with international accounting standards.",
+                            requirements: ["Professional accounting qualification", "Experience with ERP systems", "Knowledge of international financial regulations"]
+                        }
+                    ];
                     this.lastUpdated = new Date();
                 }
             }
@@ -300,28 +276,17 @@
                         <!-- Header -->
                         <header class="text-center mb-12">
                             <div class="logo-container">
+                                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTEuNSAxNWMtMS4xNyAwLTEuOSAzLjY3LTIuMiA1LjQ2LTIuMyAyLjUtNC40OSA1LjQ2LTUuNDYgNy43NC01LjQ2IDcuNzQtOC41NyA0LjgzLTkuMzggMS42MS04LjY4IDIuNS04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY......" alt="KabulJobs Logo" class="logo">
                                 <div>
                                     <h1 class="logo-text">Kabul<span>Jobs</span></h1>
                                     <p class="persian-text">کابل جابز</p>
                                 </div>
                             </div>
                             <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-                            <span class="font-semibold"> Your Go-To Hub for Job Opportunities in Afghanistan! </span>
-                            We aggregate listings from trusted job portals, making it easy for you to find your dream job
-
+                                Your one-stop destination for job opportunities in Afghanistan. We aggregate job postings from 
+                                <span class="font-semibold">acbar.org</span> and <span class="font-semibold">jobs.af</span> to help you find your dream job.
                             </p>
                         </header>
-
-                        <!-- Update Information -->
-                        <div class="update-info">
-                            <div class="flex items-center">
-                                <i class="fas fa-sync-alt text-blue-500 mr-3 text-xl animate-spin"></i>
-                                <div>
-                                    <p class="font-medium text-blue-900">Automated Job Aggregation</p>
-                                    <p class="text-sm text-blue-800">Our system automatically checks for new vacancies every 30 minutes for new job postings.</p>
-                                </div>
-                            </div>
-                        </div>
 
                         <!-- Search and Filters -->
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
@@ -347,7 +312,7 @@
                                 
                                 <div class="flex gap-2">
                                     <button id="refreshBtn" class="flex-1 bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700 transition-colors duration-200 flex items-center justify-center">
-                                        <i class="fas fa-sync-alt mr-2"></i> Refresh Now
+                                        <i class="fas fa-sync-alt mr-2"></i> Refresh
                                     </button>
                                 </div>
                             </div>
@@ -375,51 +340,20 @@
                             </div>
                         </div>
 
-                        <!-- Results Count and Last Update -->
-                        <div class="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <!-- Results Count -->
+                        <div class="mb-6 flex items-center justify-between">
                             <h2 class="text-2xl font-bold text-gray-900">
                                 ${this.filteredJobs.length} Job${this.filteredJobs.length !== 1 ? 's' : ''} Found
                             </h2>
-                            <div class="flex items-center text-sm text-gray-500 bg-white px-4 py-2 rounded-lg shadow-sm">
-                                <i class="fas fa-clock mr-2 text-green-500"></i>
-                                <div>
-                                    <span class="font-medium">Last updated:</span>
-                                    <span class="ml-1">${this.formatDate(this.lastUpdated)} ${this.formatTime(this.lastUpdated)}</span>
-                                </div>
+                            <div class="flex items-center text-sm text-gray-500">
+                                <i class="fas fa-globe-americas mr-2"></i>
+                                Aggregated from acbar.org & jobs.af
                             </div>
                         </div>
 
                         <!-- Jobs Grid -->
                         <div id="jobsContainer">
                             ${this.isLoading ? this.renderSkeleton() : this.renderJobs()}
-                        </div>
-
-                        <!-- System Information -->
-                        <div class="mt-12 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl p-6 border border-indigo-100">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3">How Our Aggregation System Works</h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div class="text-center">
-                                    <div class="bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <i class="fas fa-clock text-indigo-600"></i>
-                                    </div>
-                                    <h4 class="font-medium text-gray-900">Every 15 Minutes</h4>
-                                    <p class="text-sm text-gray-600 mt-1">Our system automatically checks both job sites for new postings</p>
-                                </div>
-                                <div class="text-center">
-                                    <div class="bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <i class="fas fa-check-circle text-indigo-600"></i>
-                                    </div>
-                                    <h4 class="font-medium text-gray-900">Verified Listings</h4>
-                                    <p class="text-sm text-gray-600 mt-1">Each job is validated before being added to our database</p>
-                                </div>
-                                <div class="text-center">
-                                    <div class="bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                                        <i class="fas fa-link text-indigo-600"></i>
-                                    </div>
-                                    <h4 class="font-medium text-gray-900">Direct Links</h4>
-                                    <p class="text-sm text-gray-600 mt-1">Apply directly through the original job posting</p>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Footer -->
@@ -464,7 +398,7 @@
                                         <div class="flex justify-between items-start mb-3">
                                             <h3 class="text-xl font-bold text-gray-900 leading-tight">${job.title}</h3>
                                             <div class="flex items-center">
-                                                <span class="source-badge ${
+                                                <span class="text-xs font-medium px-2 py-1 rounded-full ${
                                                     job.source === 'acbar.org' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
                                                 }">
                                                     ${job.source === 'acbar.org' ? 'ACBAR' : 'JOBS.AF'}
