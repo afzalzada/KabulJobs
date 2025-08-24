@@ -32,8 +32,7 @@ jobs:
             "start": "node scraper.js"
           },
           "dependencies": {
-            "axios": "^1.6.0",
-            "cheerio": "^1.0.0-rc.12"
+            "puppeteer": "^19.0.0"
           },
           "engines": {
             "node": "16.x"
@@ -66,7 +65,7 @@ jobs:
     - name: Create scraper script
       run: |
         cat > scraper.js << 'EOL'
-        // [Your scraper.js content here]
+        // [Paste the complete scraper.js content here]
         EOL
         
     - name: Run scraper
