@@ -1,178 +1,160 @@
 // scraper.js
-const axios = require('axios');
-const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 
-// Function to scrape jobs from acbar.org
+// Function to scrape jobs from acbar.org using Puppeteer
 async function scrapeACBARJobs() {
+  let browser;
   try {
     console.log('Starting to scrape ACBAR jobs...');
     
-    // Add delay to avoid rate limiting
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const response = await axios.get('https://www.acbar.org/jobs/', {
-      timeout: 30000,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1'
-      }
+    // Launch browser
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process'
+      ]
     });
     
-    console.log('Successfully fetched ACBAR page');
-    const $ = cheerio.load(response.data);
-    const jobs = [];
+    const page = await browser.newPage();
     
-    // Extract job information from acbar.org
-    $('.job-title').each((index, element) => {
-      try {
-        const titleText = $(element).text().trim();
+    // Set user agent
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
+    
+    // Navigate to the jobs page
+    await page.goto('https://www.acbar.org/jobs/', {
+      waitUntil: 'networkidle2',
+      timeout: 30000
+    });
+    
+    // Wait for job listings to load
+    await page.waitForSelector('.job-title', { timeout: 10000 });
+    
+    // Extract job data using evaluate (runs in browser context)
+    const jobs = await page.evaluate(() => {
+      const jobs = [];
+      
+      // Extract all job listings
+      document.querySelectorAll('.job-title').forEach((element, index) => {
+        const titleText = element.textContent.trim();
         const title = titleText.replace(/^Position Title:\s*/, '');
         
         // Find parent container and extract other details
-        const container = $(element).closest('.block--main, .content-wrapper');
+        const container = element.closest('.block--main, .content-wrapper');
         
         let organization = 'Not specified';
-        container.find('.list-group-item').each((i, item) => {
-          const label = $(item).find('span').first().text().trim();
-          if (label === 'Organization:') {
-            organization = $(item).contents().last().text().trim() || 'Not specified';
-            return false;
+        if (container) {
+          const orgElement = container.querySelector('.list-group-item');
+          if (orgElement && orgElement.textContent.includes('Organization:')) {
+            organization = orgElement.textContent.replace('Organization:', '').trim();
           }
-        });
+        }
         
         let location = 'Not specified';
-        container.find('.list-group-item').each((i, item) => {
-          const label = $(item).find('span').first().text().trim();
-          if (label === 'Job Location:') {
-            location = $(item).contents().last().text().trim() || 'Not specified';
-            return false;
-          }
-        });
-        
-        let type = 'Not specified';
-        container.find('.list-group-item').each((i, item) => {
-          const label = $(item).find('span').first().text().trim();
-          if (label === 'Employment Type:') {
-            type = $(item).contents().last().text().trim() || 'Not specified';
-            return false;
-          }
-        });
-        
-        let category = 'Not specified';
-        container.find('.list-group-item').each((i, item) => {
-          const label = $(item).find('span').first().text().trim();
-          if (label === 'Category:') {
-            category = $(item).contents().last().text().trim() || 'Not specified';
-            return false;
-          }
-        });
-        
-        let deadline = '';
-        container.find('.list-group-item').each((i, item) => {
-          const label = $(item).find('span').first().text().trim();
-          if (label === 'Close date:') {
-            const dateText = $(item).contents().last().text().trim();
-            deadline = formatDate(dateText);
-            return false;
-          }
-        });
-        
-        // If no deadline found, check date_posted
-        if (!deadline) {
-          const datePosted = container.find('.date_posted').text().trim();
-          const expireMatch = datePosted.match(/Expire Date: ([^&]+)/);
-          if (expireMatch && expireMatch[1]) {
-            deadline = formatDate(expireMatch[1].trim());
+        if (container) {
+          const locElement = container.querySelector('.list-group-item');
+          if (locElement && locElement.textContent.includes('Job Location:')) {
+            location = locElement.textContent.replace('Job Location:', '').trim();
           }
         }
         
         // Find link
-        let sourceUrl = '';
-        const link = $(element).find('a').first().attr('href');
-        if (link) {
-          sourceUrl = link.startsWith('http') ? link : `https://www.acbar.org${link}`;
-        }
+        const link = element.querySelector('a');
+        const href = link ? link.href : '';
         
-        if (title && sourceUrl) {
+        if (title && href) {
           jobs.push({
             id: `acbar-${Date.now()}-${index}`,
             title,
             organization,
             location,
-            type,
-            category,
-            postedDate: formatDate(new Date().toISOString().split('T')[0]),
-            deadline,
+            type: 'Not specified',
+            category: 'Not specified',
+            postedDate: new Date().toISOString().split('T')[0],
+            deadline: '',
             source: 'acbar.org',
-            sourceUrl,
-            description: `Job opening for ${title} at ${organization} in ${location}.`,
+            sourceUrl: href,
+            description: `Job opportunity: ${title}`,
             requirements: []
           });
         }
-      } catch (error) {
-        console.error(`Error processing job ${index}:`, error.message);
-      }
+      });
+      
+      return jobs;
     });
     
     console.log(`Found ${jobs.length} jobs from ACBAR`);
     return jobs;
   } catch (error) {
     console.error('Error scraping ACBAR:', error.message);
-    if (error.response) {
-      console.error('Response status:', error.response.status);
-      console.error('Response data:', error.response.data);
-    }
     return [];
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 }
 
-// Function to scrape jobs from jobs.af
+// Function to scrape jobs from jobs.af using Puppeteer
 async function scrapeJobsAF() {
+  let browser;
   try {
     console.log('Starting to scrape jobs.af...');
     
-    // Add delay to avoid rate limiting
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const response = await axios.get('https://www.jobs.af', {
-      timeout: 30000,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1'
-      }
+    // Launch browser
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process'
+      ]
     });
     
-    console.log('Successfully fetched jobs.af page');
-    const $ = cheerio.load(response.data);
-    const jobs = [];
+    const page = await browser.newPage();
     
-    // Extract job information from jobs.af based on Tailwind CSS classes
-    $('[class*="job-"], [class*="position"], [class*="listing"]').each((index, element) => {
-      try {
-        const title = $(element).find('[class*="title"], h2, h3').first().text().trim();
-        const organization = $(element).find('[class*="company"], [class*="organization"]').first().text().trim() || 'Various';
-        const location = $(element).find('[class*="location"], [class*="city"]').first().text().trim() || 'Afghanistan';
-        const type = $(element).find('[class*="type"], [class*="employment"]').first().text().trim() || 'Full-time';
-        const category = $(element).find('[class*="category"], [class*="field"]').first().text().trim() || 'General';
+    // Set user agent
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
+    
+    // Navigate to the jobs page
+    await page.goto('https://www.jobs.af', {
+      waitUntil: 'networkidle2',
+      timeout: 30000
+    });
+    
+    // Wait for job listings to load
+    await page.waitForSelector('[class*="job-"], [class*="position"], [class*="listing"]', { timeout: 10000 });
+    
+    // Extract job data using evaluate
+    const jobs = await page.evaluate(() => {
+      const jobs = [];
+      
+      // Extract job listings based on common patterns
+      document.querySelectorAll('[class*="job-"], [class*="position"], [class*="listing"]').forEach((element, index) => {
+        const title = element.querySelector('[class*="title"], h2, h3')?.textContent.trim() || 'Not specified';
+        const organization = element.querySelector('[class*="company"], [class*="organization"]')?.textContent.trim() || 'Various';
+        const location = element.querySelector('[class*="location"], [class*="city"]')?.textContent.trim() || 'Afghanistan';
+        const type = element.querySelector('[class*="type"], [class*="employment"]')?.textContent.trim() || 'Full-time';
+        const category = element.querySelector('[class*="category"], [class*="field"]')?.textContent.trim() || 'General';
         
-        const description = $(element).find('p, [class*="description"]').first().text().trim().substring(0, 200) + '...';
+        const description = element.querySelector('p, [class*="description"]')?.textContent.trim().substring(0, 200) + '...' || '';
         
         // Find link
-        let sourceUrl = '';
-        const link = $(element).find('a').first().attr('href');
-        if (link) {
-          sourceUrl = link.startsWith('http') ? link : `https://www.jobs.af${link}`;
-        }
+        const link = element.querySelector('a');
+        const href = link ? link.href : '';
         
-        if (title && sourceUrl) {
+        if (title && href) {
           jobs.push({
             id: `jobsaf-${Date.now()}-${index}`,
             title,
@@ -180,28 +162,28 @@ async function scrapeJobsAF() {
             location,
             type,
             category,
-            postedDate: formatDate(new Date().toISOString().split('T')[0]),
+            postedDate: new Date().toISOString().split('T')[0],
             deadline: '',
             source: 'jobs.af',
-            sourceUrl,
+            sourceUrl: href,
             description,
             requirements: []
           });
         }
-      } catch (error) {
-        console.error(`Error processing job ${index}:`, error.message);
-      }
+      });
+      
+      return jobs;
     });
     
     console.log(`Found ${jobs.length} jobs from jobs.af`);
     return jobs;
   } catch (error) {
     console.error('Error scraping jobs.af:', error.message);
-    if (error.response) {
-      console.error('Response status:', error.response.status);
-      console.error('Response data:', error.response.data);
-    }
     return [];
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 }
 
@@ -212,13 +194,6 @@ function formatDate(dateString) {
   // Handle various date formats
   if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
     return dateString;
-  } else if (dateString.match(/\d{1,2} [A-Za-z]+,? \d{4}/)) {
-    try {
-      const date = new Date(dateString);
-      return isNaN(date.getTime()) ? new Date().toISOString().split('T')[0] : date.toISOString().split('T')[0];
-    } catch (e) {
-      return new Date().toISOString().split('T')[0];
-    }
   } else {
     return new Date().toISOString().split('T')[0];
   }
