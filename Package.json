@@ -5,11 +5,5 @@
   "main": "scraper.js",
   "scripts": {
     "start": "node scraper.js"
-  },
-  "dependencies": {
-    "puppeteer": "^19.0.0"
-  },
-  "engines": {
-    "node": "16.x"
   }
 }
