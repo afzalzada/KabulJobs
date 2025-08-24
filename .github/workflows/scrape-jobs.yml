@@ -60,6 +60,16 @@ jobs:
       run: |
         git config user.name "GitHub Actions"
         git config user.email "actions@github.com"
-        git add jobs-data.json
-        git commit -m "Update job data $(date)" || echo "No changes to commit"
-        git push
+        
+        # Check if jobs-data.json exists and has changes
+        if [ -f "jobs-data.json" ]; then
+          git add jobs-data.json
+          git commit -m "Update job data $(date)" || echo "No changes to commit"
+          git push
+        else
+          echo "No jobs-data.json file found, creating one..."
+          touch jobs-data.json
+          git add jobs-data.json
+          git commit -m "Create jobs-data.json $(date)"
+          git push
+        fi
