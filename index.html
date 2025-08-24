@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KabulJobs - Job Aggregator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .job-card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .skeleton {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        .filter-badge {
+            transition: all 0.2s ease;
+        }
+        
+        .filter-badge:hover {
+            transform: scale(1.05);
+        }
+        
+        .filter-badge.active {
+            background-color: #4f46e5;
+            color: white;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .logo {
+            width: 100px;
+            height: auto;
+        }
+        
+        .logo-text {
+            font-weight: 700;
+            font-size: 2.5rem;
+            color: #c2185b;
+            margin: 0;
+        }
+        
+        .logo-text span {
+            color: #1976d2;
+        }
+        
+        .persian-text {
+            font-family: 'Noto Sans Arabic', sans-serif;
+            font-size: 1rem;
+            color: #c2185b;
+            text-align: right;
+            margin-top: 0.5rem;
+        }
+        
+        .update-info {
+            background: linear-gradient(90deg, #f0f9ff, #e0f2fe, #bae6fd);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div id="app"></div>
+    
+    <script>
+        class KabulJobsApp {
+            constructor() {
+                this.jobs = [];
+                this.filteredJobs = [];
+                this.categories = new Set();
+                this.locations = new Set();
+                this.types = new Set();
+                this.selectedCategory = 'All';
+                this.selectedLocation = 'All';
+                this.selectedType = 'All';
+                this.searchTerm = '';
+                this.isLoading = true;
+                this.lastUpdated = new Date();
+                
+                // Use raw GitHub content URL
+                this.dataUrl = 'https://raw.githubusercontent.com/yourusername/kabuljobs/main/jobs-data.json';
+                
+                this.initialize();
+            }
+
+            async initialize() {
+                await this.loadJobs();
+                this.extractFilters();
+                this.render();
+                this.setupEventListeners();
+                
+                // Auto-refresh every 15 minutes
+                setInterval(() => this.refreshJobs(), 900000);
+            }
+
+            async refreshJobs() {
+                this.isLoading = true;
+                this.render();
+                await this.loadJobs();
+                this.extractFilters();
+                this.filterJobs();
+                this.lastUpdated = new Date();
+                this.isLoading = false;
+                this.render();
+            }
+
+            async loadJobs() {
+                try {
+                    const response = await fetch(this.dataUrl + '?t=' + new Date().getTime());
+                    const data = await response.json();
+                    this.jobs = data.jobs || [];
+                    this.lastUpdated = data.lastUpdated ? new Date(data.lastUpdated) : new Date();
+                } catch (error) {
+                    console.error("Error loading jobs:", error);
+                    // Fallback to a small set of example jobs
+                    this.jobs = [
+                        {
+                            id: 1,
+                            title: "Program Manager",
+                            organization: "ACBAR",
+                            location: "Kabul",
+                            type: "Full-time",
+                            category: "Management",
+                            postedDate: "2023-10-15",
+                            deadline: "2023-10-30",
+                            source: "acbar.org",
+                            sourceUrl: "https://www.acbar.org/jobs/",
+                            description: "Responsible for managing humanitarian programs across multiple provinces in Afghanistan.",
+                            requirements: ["Bachelor's degree in relevant field", "5+ years of experience in program management", "Fluency in Dari and Pashto"]
+                        },
+                        {
+                            id: 2,
+                            title: "Senior Accountant",
+                            organization: "UNICEF",
+                            location: "Kabul",
+                            type: "Contract",
+                            category: "Finance",
+                            postedDate: "2023-10-14",
+                            deadline: "2023-10-28",
+                            source: "jobs.af",
+                            sourceUrl: "https://www.jobs.af",
+                            description: "Oversee financial operations and ensure compliance with international accounting standards.",
+                            requirements: ["Professional accounting qualification", "Experience with ERP systems", "Knowledge of international financial regulations"]
+                        }
+                    ];
+                    this.lastUpdated = new Date();
+                }
+            }
+
+            extractFilters() {
+                this.jobs.forEach(job => {
+                    this.categories.add(job.category);
+                    this.locations.add(job.location);
+                    this.types.add(job.type);
+                });
+            }
+
+            filterJobs() {
+                this.filteredJobs = this.jobs.filter(job => {
+                    const matchesCategory = this.selectedCategory === 'All' || job.category === this.selectedCategory;
+                    const matchesLocation = this.selectedLocation === 'All' || job.location === this.selectedLocation;
+                    const matchesType = this.selectedType === 'All' || job.type === this.selectedType;
+                    const matchesSearch = job.title.toLowerCase().includes(this.searchTerm.toLowerCase()) || 
+                                        job.organization.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                                        job.category.toLowerCase().includes(this.searchTerm.toLowerCase());
+                    
+                    return matchesCategory && matchesLocation && matchesType && matchesSearch;
+                });
+            }
+
+            setupEventListeners() {
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.searchTerm = e.target.value;
+                    this.filterJobs();
+                    this.render();
+                });
+
+                document.getElementById('categoryFilter').addEventListener('change', (e) => {
+                    this.selectedCategory = e.target.value;
+                    this.filterJobs();
+                    this.render();
+                });
+
+                document.getElementById('locationFilter').addEventListener('change', (e) => {
+                    this.selectedLocation = e.target.value;
+                    this.filterJobs();
+                    this.render();
+                });
+
+                document.getElementById('typeFilter').addEventListener('change', (e) => {
+                    this.selectedType = e.target.value;
+                    this.filterJobs();
+                    this.render();
+                });
+
+                // Refresh button
+                document.getElementById('refreshBtn').addEventListener('click', async () => {
+                    await this.refreshJobs();
+                });
+            }
+
+            formatDate(dateString) {
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                return new Date(dateString).toLocaleDateString('en-US', options);
+            }
+
+            formatTime(date) {
+                return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            getDaysRemaining(deadline) {
+                const today = new Date();
+                const deadlineDate = new Date(deadline);
+                const diffTime = deadlineDate - today;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                return diffDays;
+            }
+
+            renderSkeleton() {
+                return `
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${Array(6).fill().map(() => `
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 animate-pulse">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="h-4 bg-gray-200 rounded w-3/4 skeleton"></div>
+                                    <div class="h-6 w-6 bg-gray-200 rounded-full skeleton"></div>
+                                </div>
+                                <div class="h-3 bg-gray-200 rounded w-1/2 mb-2 skeleton"></div>
+                                <div class="h-3 bg-gray-200 rounded w-2/3 mb-4 skeleton"></div>
+                                <div class="flex flex-wrap gap-2 mb-4">
+                                    <div class="h-6 bg-gray-200 rounded-full w-16 skeleton"></div>
+                                    <div class="h-6 bg-gray-200 rounded-full w-20 skeleton"></div>
+                                </div>
+                                <div class="h-3 bg-gray-200 rounded w-3/4 mb-2 skeleton"></div>
+                                <div class="h-3 bg-gray-200 rounded w-1/2 skeleton"></div>
+                                <div class="mt-6 flex justify-between items-center">
+                                    <div class="h-8 bg-gray-200 rounded w-24 skeleton"></div>
+                                    <div class="h-4 bg-gray-200 rounded w-16 skeleton"></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            render() {
+                this.filterJobs();
+                
+                const app = document.getElementById('app');
+                app.innerHTML = `
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        <!-- Header -->
+                        <header class="text-center mb-12">
+                            <div class="logo-container">
+                                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMTEuNSAxNWMtMS4xNyAwLTEuOSAzLjY3LTIuMiA1LjQ2LTIuMyAyLjUtNC40OSA1LjQ2LTUuNDYgNy43NC01LjQ2IDcuNzQtOC41NyA0LjgzLTkuMzggMS42MS04LjY4IDIuNS04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY4IDEuNy04LjY......" alt="KabulJobs Logo" class="logo">
+                                <div>
+                                    <h1 class="logo-text">Kabul<span>Jobs</span></h1>
+                                    <p class="persian-text">کابل جابز</p>
+                                </div>
+                            </div>
+                            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                                Your one-stop destination for job opportunities in Afghanistan. We aggregate job postings from 
+                                <span class="font-semibold">acbar.org</span> and <span class="font-semibold">jobs.af</span> to help you find your dream job.
+                            </p>
+                        </header>
+
+                        <!-- Update Information -->
+                        <div class="update-info">
+                            <div class="flex items-center">
+                                <i class="fas fa-sync-alt text-blue-500 mr-3 text-xl animate-spin"></i>
+                                <div>
+                                    <p class="font-medium text-blue-900">Automated Job Aggregation</p>
+                                    <p class="text-sm text-blue-800">Our free system automatically checks for new job postings every 15 minutes using GitHub Actions.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+                                <div class="lg:col-span-2">
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-search text-gray-400"></i>
+                                        </div>
+                                        <input id="searchInput" type="text" placeholder="Search jobs, organizations, or categories..." 
+                                               class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <select id="categoryFilter" class="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                        <option value="All">All Categories</option>
+                                        ${Array.from(this.categories).map(category => 
+                                            `<option value="${category}">${category}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                                
+                                <div class="flex gap-2">
+                                    <button id="refreshBtn" class="flex-1 bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700 transition-colors duration-200 flex items-center justify-center">
+                                        <i class="fas fa-sync-alt mr-2"></i> Refresh Now
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap gap-2">
+                                <div class="flex items-center">
+                                    <label class="text-sm font-medium text-gray-700 mr-2">Location:</label>
+                                    <select id="locationFilter" class="border border-gray-300 rounded-lg px-3 py-1 text-sm">
+                                        <option value="All">All Locations</option>
+                                        ${Array.from(this.locations).map(location => 
+                                            `<option value="${location}">${location}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <label class="text-sm font-medium text-gray-700 mr-2">Type:</label>
+                                    <select id="typeFilter" class="border border-gray-300 rounded-lg px-3 py-1 text-sm">
+                                        <option value="All">All Types</option>
+                                        ${Array.from(this.types).map(type => 
+                                            `<option value="${type}">${type}</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results Count and Last Update -->
+                        <div class="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <h2 class="text-2xl font-bold text-gray-900">
+                                ${this.filteredJobs.length} Job${this.filteredJobs.length !== 1 ? 's' : ''} Found
+                            </h2>
+                            <div class="flex items-center text-sm text-gray-500 bg-white px-4 py-2 rounded-lg shadow-sm">
+                                <i class="fas fa-clock mr-2 text-green-500"></i>
+                                <div>
+                                    <span class="font-medium">Last updated:</span>
+                                    <span class="ml-1">${this.formatDate(this.lastUpdated)} ${this.formatTime(this.lastUpdated)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Jobs Grid -->
+                        <div id="jobsContainer">
+                            ${this.isLoading ? this.renderSkeleton() : this.renderJobs()}
+                        </div>
+
+                        <!-- Free Service Information -->
+                        <div class="mt-12 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 border border-green-100">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">100% Free Service</h3>
+                            <p class="text-sm text-gray-700 mb-4">This job aggregator runs completely free using:</p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="text-center">
+                                    <div class="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <i class="fab fa-github text-green-600"></i>
+                                    </div>
+                                    <h4 class="font-medium text-gray-900">GitHub</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Free hosting and automation</p>
+                                </div>
+                                <div class="text-center">
+                                    <div class="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <i class="fas fa-sync-alt text-green-600"></i>
+                                    </div>
+                                    <h4 class="font-medium text-gray-900">GitHub Actions</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Free scheduled scraping</p>
+                                </div>
+                                <div class="text-center">
+                                    <div class="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                                        <i class="fas fa-globe text-green-600"></i>
+                                    </div>
+                                    <h4 class="font-medium text-gray-900">GitHub Pages</h4>
+                                    <p class="text-sm text-gray-600 mt-1">Free website hosting</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <footer class="mt-16 text-center text-gray-500">
+                            <div class="border-t border-gray-200 pt-8">
+                                <p class="mb-4">KabulJobs - Connecting talent with opportunities across Afghanistan</p>
+                                <p class="text-sm">Job listings are sourced from <a href="https://www.acbar.org" target="_blank" class="text-indigo-600 hover:underline">acbar.org</a> 
+                                and <a href="https://www.jobs.af" target="_blank" class="text-indigo-600 hover:underline">jobs.af</a>. 
+                                We provide links to the original postings for application.</p>
+                                <p class="mt-4 text-xs">© ${new Date().getFullYear()} KabulJobs. All rights reserved.</p>
+                            </div>
+                        </footer>
+                    </div>
+                `;
+            }
+
+            renderJobs() {
+                if (this.filteredJobs.length === 0) {
+                    return `
+                        <div class="text-center py-16">
+                            <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
+                            <h3 class="text-2xl font-semibold text-gray-600 mb-2">No jobs found</h3>
+                            <p class="text-gray-500 mb-6">Try adjusting your search criteria or check back later for new opportunities.</p>
+                            <button id="resetFilters" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors duration-200">
+                                Reset Filters
+                            </button>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        ${this.filteredJobs.map(job => {
+                            const daysRemaining = this.getDaysRemaining(job.deadline);
+                            let deadlineStatus = 'text-green-600';
+                            if (daysRemaining <= 7) deadlineStatus = 'text-red-600';
+                            else if (daysRemaining <= 14) deadlineStatus = 'text-yellow-600';
+
+                            return `
+                                <div class="job-card bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
+                                    <div class="p-6">
+                                        <div class="flex justify-between items-start mb-3">
+                                            <h3 class="text-xl font-bold text-gray-900 leading-tight">${job.title}</h3>
+                                            <div class="flex items-center">
+                                                <span class="text-xs font-medium px-2 py-1 rounded-full ${
+                                                    job.source === 'acbar.org' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                                                }">
+                                                    ${job.source === 'acbar.org' ? 'ACBAR' : 'JOBS.AF'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <p class="text-lg font-semibold text-indigo-600 mb-1">${job.organization}</p>
+                                            <div class="flex items-center text-gray-600 mb-2">
+                                                <i class="fas fa-map-marker-alt mr-2 text-sm"></i>
+                                                <span class="text-sm">${job.location}</span>
+                                            </div>
+                                            <div class="flex items-center text-gray-600">
+                                                <i class="fas fa-clock mr-2 text-sm"></i>
+                                                <span class="text-sm">${job.type}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex flex-wrap gap-2 mb-4">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                                ${job.category}
+                                            </span>
+                                        </div>
+                                        
+                                        <p class="text-gray-600 text-sm line-clamp-3 mb-4">${job.description}</p>
+                                        
+                                        <div class="border-t border-gray-100 pt-4">
+                                            <div class="flex justify-between items-center">
+                                                <div class="text-sm">
+                                                    <span class="text-gray-500">Deadline: </span>
+                                                    <span class="${deadlineStatus} font-medium">${this.formatDate(job.deadline)}</span>
+                                                </div>
+                                                <span class="text-xs text-gray-500">Posted ${this.formatDate(job.postedDate)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
+                                        <a href="${job.sourceUrl}" target="_blank" 
+                                           class="w-full flex items-center justify-center bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm font-medium">
+                                            <span>View Details</span>
+                                            <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize the app when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new KabulJobsApp();
+        });
+    </script>
+</body>
+</html>
