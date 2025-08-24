@@ -1,10 +1,39 @@
 {
-  "jobs": [],
-  "lastUpdated": "2023-01-01T00:00:00.000Z",
-  "totalCount": 0,
+  "jobs": [
+    {
+      "id": "1",
+      "title": "Safeguarding Officer",
+      "organization": "AADA",
+      "location": "Kabul",
+      "type": "Full Time",
+      "category": "Health Care",
+      "postedDate": "2025-08-24",
+      "deadline": "2025-09-05",
+      "source": "acbar.org",
+      "sourceUrl": "https://www.acbar.org/jobs/",
+      "description": "Position available for Safeguarding Officer. Visit the website for details.",
+      "requirements": []
+    },
+    {
+      "id": "2",
+      "title": "Senior Accountant",
+      "organization": "UNICEF",
+      "location": "Kabul",
+      "type": "Contract",
+      "category": "Finance",
+      "postedDate": "2025-08-20",
+      "deadline": "2025-09-10",
+      "source": "jobs.af",
+      "sourceUrl": "https://www.jobs.af/",
+      "description": "Senior Accountant position available. Visit the website for details.",
+      "requirements": []
+    }
+  ],
+  "lastUpdated": "2025-08-24T10:00:00Z",
+  "totalCount": 2,
   "sources": {
-    "acbar": 0,
-    "jobsaf": 0
+    "acbar": 1,
+    "jobsaf": 1
   },
-  "warning": "This file will be automatically updated by the scraper. Initial file created manually."
+  "warning": "This is a static file. Update it manually with new job postings from acbar.org and jobs.af."
 }
