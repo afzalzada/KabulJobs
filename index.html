@@ -54,134 +54,55 @@
                 </div>
             </div>
             <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-                Job opportunities in Afghanistan from <span class="font-semibold">acbar.org</span> and <span class="font-semibold">jobs.af</span>.
+                Job opportunities in Afghanistan from trusted organizations.
             </p>
             <p class="text-sm text-gray-500 mt-2">
-                Updated manually with the latest job postings
+                Data powered by Google Sheets - Updated in real-time
             </p>
         </header>
 
-        <!-- Jobs Grid -->
-        <div id="jobsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Job 1 -->
-            <div class="job-card bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
-                <div class="p-6">
-                    <div class="flex justify-between items-start mb-3">
-                        <h3 class="text-xl font-bold text-gray-900 leading-tight">Safeguarding Officer</h3>
-                        <div class="flex items-center">
-                            <span class="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                                ACBAR
-                            </span>
+        <!-- Search and Filters -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+                <div class="lg:col-span-2">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
                         </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <p class="text-lg font-semibold text-indigo-600 mb-1">AADA</p>
-                        <div class="flex items-center text-gray-600 mb-2">
-                            <i class="fas fa-map-marker-alt mr-2 text-sm"></i>
-                            <span class="text-sm">Kabul</span>
-                        </div>
-                        <div class="flex items-center text-gray-600">
-                            <i class="fas fa-clock mr-2 text-sm"></i>
-                            <span class="text-sm">Full Time</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                            Health Care
-                        </span>
-                    </div>
-                    
-                    <p class="text-gray-600 text-sm mb-4">Organize and implement continuous training on child protection and gender-based violence for all staff and partners.</p>
-                    
-                    <div class="border-t border-gray-100 pt-4">
-                        <div class="flex justify-between items-center">
-                            <div class="text-sm">
-                                <span class="text-gray-500">Deadline: </span>
-                                <span class="font-medium">2025-09-05</span>
-                            </div>
-                            <span class="text-xs text-gray-500">Posted 2025-08-24</span>
-                        </div>
+                        <input id="searchInput" type="text" placeholder="Search jobs, organizations, or categories..." 
+                               class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
                 </div>
                 
-                <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
-                    <a href="https://www.acbar.org/jobs/" target="_blank" 
-                       class="w-full flex items-center justify-center bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm font-medium">
-                        <span>View Details</span>
-                        <i class="fas fa-arrow-right ml-2 text-xs"></i>
-                    </a>
-                </div>
-            </div>
-
-            <!-- Job 2 -->
-            <div class="job-card bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
-                <div class="p-6">
-                    <div class="flex justify-between items-start mb-3">
-                        <h3 class="text-xl font-bold text-gray-900 leading-tight">Senior Accountant</h3>
-                        <div class="flex items-center">
-                            <span class="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-800">
-                                JOBS.AF
-                            </span>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <p class="text-lg font-semibold text-indigo-600 mb-1">UNICEF</p>
-                        <div class="flex items-center text-gray-600 mb-2">
-                            <i class="fas fa-map-marker-alt mr-2 text-sm"></i>
-                            <span class="text-sm">Kabul</span>
-                        </div>
-                        <div class="flex items-center text-gray-600">
-                            <i class="fas fa-clock mr-2 text-sm"></i>
-                            <span class="text-sm">Contract</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex flex-wrap gap-2 mb-4">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                            Finance
-                        </span>
-                    </div>
-                    
-                    <p class="text-gray-600 text-sm mb-4">Oversee financial operations and ensure compliance with international accounting standards.</p>
-                    
-                    <div class="border-t border-gray-100 pt-4">
-                        <div class="flex justify-between items-center">
-                            <div class="text-sm">
-                                <span class="text-gray-500">Deadline: </span>
-                                <span class="font-medium">2025-09-10</span>
-                            </div>
-                            <span class="text-xs text-gray-500">Posted 2025-08-20</span>
-                        </div>
-                    </div>
+                <div>
+                    <select id="categoryFilter" class="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="All">All Categories</option>
+                    </select>
                 </div>
                 
-                <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
-                    <a href="https://www.jobs.af/" target="_blank" 
-                       class="w-full flex items-center justify-center bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm font-medium">
-                        <span>View Details</span>
-                        <i class="fas fa-arrow-right ml-2 text-xs"></i>
-                    </a>
+                <div class="flex gap-2">
+                    <button id="refreshBtn" class="flex-1 bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700 transition-colors duration-200 flex items-center justify-center">
+                        <i class="fas fa-sync-alt mr-2"></i> Refresh
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Manual Update Instructions -->
-        <div class="mt-12 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-            <h3 class="text-lg font-semibold text-yellow-800 mb-3">How to Update Job Listings</h3>
-            <ol class="list-decimal list-inside text-yellow-700 space-y-2">
-                <li>Visit <a href="https://www.acbar.org/jobs/" target="_blank" class="text-blue-600 underline">acbar.org/jobs</a> and <a href="https://www.jobs.af" target="_blank" class="text-blue-600 underline">jobs.af</a></li>
-                <li>Find new job postings</li>
-                <li>Copy one of the job card blocks above</li>
-                <li>Paste it in the HTML file</li>
-                <li>Update the job details (title, organization, location, etc.)</li>
-                <li>Commit the changes to your GitHub repository</li>
-                <li>Your website will update automatically</li>
+        <!-- Jobs Grid -->
+        <div id="jobsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="col-span-3 text-center py-8">Loading jobs...</div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="mt-12 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-blue-800 mb-3">How to Update Job Listings</h3>
+            <ol class="list-decimal list-inside text-blue-700 space-y-2">
+                <li>Open the <a href="https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit" target="_blank" class="text-blue-600 underline">Google Sheet</a></li>
+                <li>Add or update job postings in the spreadsheet</li>
+                <li>Click "Refresh" on this website to see the latest jobs</li>
             </ol>
-            <p class="mt-4 text-sm text-yellow-600">
-                This simple system takes less than 2 minutes per job and guarantees 100% reliability.
+            <p class="mt-4 text-sm text-blue-600">
+                No technical skills needed. Just update the spreadsheet like any other document.
             </p>
         </div>
 
@@ -195,5 +116,164 @@
             </div>
         </footer>
     </div>
+
+    <script>
+        // Replace with your published Google Sheet CSV URL
+        const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRt2yeLk-C6RA95UxBYoewJN9BEigEN5nF2LLvJDs7LkI5QSvYivRz3D8MyJrw1lqWuewuamLNRjVdX/pub?output=csv';
+        
+        let jobs = [];
+        let categories = new Set();
+        
+        // Load jobs from Google Sheets
+        async function loadJobs() {
+            try {
+                const response = await fetch(GOOGLE_SHEETS_CSV_URL);
+                const text = await response.text();
+                jobs = parseCSV(text);
+                extractCategories();
+                filterJobs();
+            } catch (error) {
+                console.error('Error loading jobs:', error);
+                document.getElementById('jobsContainer').innerHTML = 
+                    '<div class="col-span-3 text-center py-8 text-red-600">Error loading job data. Please check back later.</div>';
+            }
+        }
+        
+        // Parse CSV data
+        function parseCSV(csv) {
+            const lines = csv.split('\n');
+            const headers = lines[0].split(',');
+            const jobs = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === '') continue;
+                
+                const values = lines[i].split(',');
+                const job = {};
+                
+                headers.forEach((header, index) => {
+                    // Clean the header name
+                    const cleanHeader = header.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+                    job[cleanHeader] = values[index] ? values[index].trim() : '';
+                });
+                
+                if (job.title && job.sourceurl) {
+                    jobs.push(job);
+                }
+            }
+            
+            return jobs;
+        }
+        
+        // Extract unique categories for filter
+        function extractCategories() {
+            categories = new Set();
+            jobs.forEach(job => {
+                if (job.category) categories.add(job.category);
+            });
+            
+            const categoryFilter = document.getElementById('categoryFilter');
+            categoryFilter.innerHTML = '<option value="All">All Categories</option>';
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categoryFilter.appendChild(option);
+            });
+        }
+        
+        // Filter and display jobs
+        function filterJobs() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const selectedCategory = document.getElementById('categoryFilter').value;
+            
+            const filteredJobs = jobs.filter(job => {
+                const matchesSearch = !searchTerm || 
+                    job.title.toLowerCase().includes(searchTerm) ||
+                    job.organization.toLowerCase().includes(searchTerm) ||
+                    job.category.toLowerCase().includes(searchTerm);
+                    
+                const matchesCategory = selectedCategory === 'All' || job.category === selectedCategory;
+                
+                return matchesSearch && matchesCategory;
+            });
+            
+            displayJobs(filteredJobs);
+        }
+        
+        // Display jobs on the page
+        function displayJobs(jobsToDisplay) {
+            const container = document.getElementById('jobsContainer');
+            
+            if (jobsToDisplay.length === 0) {
+                container.innerHTML = '<div class="col-span-3 text-center py-8">No jobs found matching your criteria.</div>';
+                return;
+            }
+
+            container.innerHTML = jobsToDisplay.map(job => `
+                <div class="job-card bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-bold text-gray-900 leading-tight">${job.title}</h3>
+                            <div class="flex items-center">
+                                <span class="text-xs font-medium px-2 py-1 rounded-full ${
+                                    job.source === 'acbar.org' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                                }">
+                                    ${job.source === 'acbar.org' ? 'ACBAR' : 'JOBS.AF'}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <p class="text-lg font-semibold text-indigo-600 mb-1">${job.organization}</p>
+                            <div class="flex items-center text-gray-600 mb-2">
+                                <i class="fas fa-map-marker-alt mr-2 text-sm"></i>
+                                <span class="text-sm">${job.location}</span>
+                            </div>
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-clock mr-2 text-sm"></i>
+                                <span class="text-sm">${job.type}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                ${job.category}
+                            </span>
+                        </div>
+                        
+                        <p class="text-gray-600 text-sm mb-4">${job.description}</p>
+                        
+                        <div class="border-t border-gray-100 pt-4">
+                            <div class="flex justify-between items-center">
+                                <div class="text-sm">
+                                    <span class="text-gray-500">Deadline: </span>
+                                    <span class="font-medium">${job.deadline}</span>
+                                </div>
+                                <span class="text-xs text-gray-500">Posted ${job.posteddate}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
+                        <a href="${job.sourceurl}" target="_blank" 
+                           class="w-full flex items-center justify-center bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm font-medium">
+                            <span>View Details</span>
+                            <i class="fas fa-arrow-right ml-2 text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Setup event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            loadJobs();
+            
+            document.getElementById('searchInput').addEventListener('input', filterJobs);
+            document.getElementById('categoryFilter').addEventListener('change', filterJobs);
+            document.getElementById('refreshBtn').addEventListener('click', loadJobs);
+        });
+    </script>
 </body>
 </html>
