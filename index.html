@@ -346,10 +346,10 @@
     </button>
 
     <script>
-        // Corrected Google Sheets CSV URL
+        // Google Sheets CSV URL
         const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRt2yeLk-C6RA95UxBYoewJN9BEigEN5nF2LLvJDs7LkI5QSvYivRz3D8MyJrw1lqWuewuamLNRjVdX/pub?output=csv';
         
-        // Organization logo mapping - All your organization logos
+        // Organization logo mapping
         const orgLogos = {
             "Terre des hommes": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
             "Time Height Services Pvt": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/6565bf8b3b5316139bf4cc9a/1710410987784",
@@ -434,12 +434,14 @@
             try {
                 console.log('Attempting to fetch data from:', GOOGLE_SHEETS_CSV_URL);
                 
-                // Add cache busting to prevent browser caching issues
-                const cacheBustedUrl = GOOGLE_SHEETS_CSV_URL + '&t=' + new Date().getTime();
+                // Add cache busting and proper headers
+                const cacheBustedUrl = `${GOOGLE_SHEETS_CSV_URL}&_=${Date.now()}`;
                 
                 const response = await fetch(cacheBustedUrl, {
                     method: 'GET',
+                    mode: 'cors',
                     headers: {
+                        'Accept': 'text/csv',
                         'Cache-Control': 'no-cache',
                         'Pragma': 'no-cache'
                     }
@@ -452,24 +454,28 @@
                 const text = await response.text();
                 console.log('Raw CSV data received:', text.substring(0, 200) + '...');
                 
-                // Check if the response is actually CSV data
-                if (text.includes('<html') || text.includes('<HTML')) {
+                // Check if the response is HTML (which indicates an error)
+                if (text.trim().startsWith('<!DOCTYPE html') || text.trim().startsWith('<html')) {
                     throw new Error('Received HTML instead of CSV data. The Google Sheets URL might be incorrect or private.');
                 }
                 
+                // Parse CSV
                 jobs = parseCSV(text);
                 console.log('Parsed jobs:', jobs);
                 
+                // Validate that we have jobs
                 if (jobs.length === 0) {
-                    throw new Error('No jobs found in the CSV data. Please check your Google Sheet structure.');
+                    throw new Error('No jobs found in the CSV data. Please check your Google Sheet structure and ensure it has data.');
                 }
                 
+                // Update statistics and display jobs
                 updateStatistics();
                 filterJobs();
+                
             } catch (error) {
                 console.error('Error loading jobs:', error);
                 
-                // Display user-friendly error message
+                // Display detailed error message
                 document.getElementById('jobsContainer').innerHTML = 
                     `<div class="col-span-3 text-center py-12">
                         <div class="bg-red-50 border border-red-200 rounded-xl p-8 max-w-md mx-auto">
@@ -477,56 +483,69 @@
                             <h3 class="text-xl font-semibold text-red-700 mb-2">Failed to load job data</h3>
                             <p class="text-red-600 mb-2">${error.message}</p>
                             <p class="text-sm text-red-500">Please check the console for more details.</p>
+                            <button onclick="location.reload()" class="mt-4 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                                Try Again
+                            </button>
                         </div>
                     </div>`;
             }
         }
         
-        // Parse CSV data
+        // Parse CSV data with improved error handling
         function parseCSV(csv) {
-            const lines = csv.split('\n');
-            if (lines.length < 2) {
-                console.warn('CSV has no data rows');
+            try {
+                const lines = csv.split('\n');
+                if (lines.length < 2) {
+                    console.warn('CSV has no data rows');
+                    return [];
+                }
+                
+                // Parse headers
+                const headers = lines[0].split(',').map(header => 
+                    header.trim().replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
+                );
+                
+                const jobs = [];
+                let validJobCount = 0;
+                
+                for (let i = 1; i < lines.length; i++) {
+                    if (lines[i].trim() === '') continue;
+                    
+                    const values = lines[i].split(',');
+                    const job = {};
+                    
+                    // Map values to headers
+                    headers.forEach((header, index) => {
+                        job[header] = values[index] ? values[index].trim() : '';
+                    });
+                    
+                    // Only include jobs with essential fields
+                    if (job.title && job.sourceurl) {
+                        jobs.push(job);
+                        validJobCount++;
+                    } else {
+                        console.warn(`Skipping job at row ${i+1} - missing title or source URL`);
+                    }
+                }
+                
+                console.log(`Parsed ${validJobCount} valid jobs from ${lines.length-1} rows`);
+                return jobs;
+            } catch (error) {
+                console.error('Error parsing CSV:', error);
                 return [];
             }
-            
-            const headers = lines[0].split(',');
-            const jobs = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                if (lines[i].trim() === '') continue;
-                
-                const values = lines[i].split(',');
-                const job = {};
-                
-                headers.forEach((header, index) => {
-                    // Clean the header name
-                    const cleanHeader = header.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-                    job[cleanHeader] = values[index] ? values[index].trim() : '';
-                });
-                
-                // Only include jobs with title and source URL
-                if (job.title && job.sourceurl) {
-                    jobs.push(job);
-                }
-            }
-            
-            return jobs;
         }
         
         // Update statistics
         function updateStatistics() {
-            // Count total jobs
             document.getElementById('totalJobs').textContent = jobs.length;
             
-            // Count unique organizations
             organizations = new Set();
             jobs.forEach(job => {
                 if (job.organization) organizations.add(job.organization);
             });
             document.getElementById('organizationsCount').textContent = organizations.size;
             
-            // Count jobs posted today
             const today = new Date();
             const todayJobs = jobs.filter(job => {
                 const postedDate = new Date(job.posteddate);
@@ -534,7 +553,6 @@
             });
             document.getElementById('todayJobs').textContent = todayJobs.length;
             
-            // Count jobs expiring soon (within 3 days)
             const threeDaysFromNow = new Date();
             threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
             
@@ -548,68 +566,32 @@
         
         // Get organization logo URL
         function getOrgLogo(organization) {
-            // First check if the organization has a specific logo URL in the data
-            if (orgLogos[organization]) {
-                return orgLogos[organization];
-            }
-            
-            // Return null if no logo found, which will show the placeholder
-            return null;
+            return orgLogos[organization] || null;
         }
         
         // Parse date string with multiple format support
         function parseDate(dateString) {
             if (!dateString) return null;
             
-            // Try different date formats
+            // Common date formats
             const formats = [
                 // YYYY-MM-DD
-                () => {
-                    const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-                    if (match) {
-                        return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
-                    }
-                    return null;
-                },
+                dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/) && 
+                (() => new Date(parseInt(dateString.split('-')[0]), parseInt(dateString.split('-')[1]) - 1, parseInt(dateString.split('-')[2]))),
+                
                 // DD-MM-YYYY
-                () => {
-                    const match = dateString.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-                    if (match) {
-                        return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
-                    }
-                    return null;
-                },
+                dateString.match(/^(\d{2})-(\d{2})-(\d{4})$/) && 
+                (() => new Date(parseInt(dateString.split('-')[2]), parseInt(dateString.split('-')[1]) - 1, parseInt(dateString.split('-')[0]))),
+                
                 // MM/DD/YYYY
-                () => {
-                    const match = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-                    if (match) {
-                        return new Date(parseInt(match[3]), parseInt(match[1]) - 1, parseInt(match[2]));
-                    }
-                    return null;
-                },
+                dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/) && 
+                (() => new Date(parseInt(dateString.split('/')[2]), parseInt(dateString.split('/')[0]) - 1, parseInt(dateString.split('/')[1]))),
+                
                 // DD/MM/YYYY
-                () => {
-                    const match = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-                    if (match) {
-                        return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
-                    }
-                    return null;
-                },
-                // Month DD, YYYY (e.g., "September 5, 2025")
-                () => {
-                    const monthNames = ["January", "February", "March", "April", "May", "June",
-                                      "July", "August", "September", "October", "November", "December"];
-                    const regex = new RegExp(`^(${monthNames.join('|')})\\s+(\\d{1,2}),?\\s+(\\d{4})$`, 'i');
-                    const match = dateString.match(regex);
-                    if (match) {
-                        const monthIndex = monthNames.findIndex(name => name.toLowerCase() === match[1].toLowerCase());
-                        return new Date(parseInt(match[3]), monthIndex, parseInt(match[2]));
-                    }
-                    return null;
-                }
-            ];
+                dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/) && 
+                (() => new Date(parseInt(dateString.split('/')[2]), parseInt(dateString.split('/')[1]) - 1, parseInt(dateString.split('/')[0])))
+            ].filter(Boolean);
             
-            // Try each format
             for (const format of formats) {
                 const date = format();
                 if (date && !isNaN(date.getTime())) {
@@ -617,7 +599,6 @@
                 }
             }
             
-            // If no format matches, return null
             return null;
         }
         
@@ -628,3 +609,194 @@
                 return 'card-education';
             } else if (lowerOrg.includes('health') || lowerOrg.includes('medical') || lowerOrg.includes('hospital') || 
                       lowerOrg.includes('care') || lowerOrg.includes('relief')) {
+                return 'card-healthcare';
+            } else if (lowerOrg.includes('ministry') || lowerOrg.includes('government') || lowerOrg.includes('department') ||
+                      lowerOrg.includes('mudh') || lowerOrg.includes('dabs') || lowerOrg.includes('msu')) {
+                return 'card-government';
+            } else if (lowerOrg.includes('bank') || lowerOrg.includes('financial') || lowerOrg.includes('pay') ||
+                      lowerOrg.includes('banking') || lowerOrg.includes('finance')) {
+                return 'card-banking';
+            } else if (lowerOrg.includes('construction') || lowerOrg.includes('building') || lowerOrg.includes('engineering') ||
+                      lowerOrg.includes('logistic') || lowerOrg.includes('constriction') || lowerOrg.includes('company')) {
+                return 'card-construction';
+            } else if (lowerOrg.includes('telecom') || lowerOrg.includes('mobile') || lowerOrg.includes('communication') ||
+                      lowerOrg.includes('network') || lowerOrg.includes('phone')) {
+                return 'card-telecom';
+            } else if (lowerOrg.includes('consulting') || lowerOrg.includes('management') || lowerOrg.includes('services') ||
+                      lowerOrg.includes('consultancy') || lowerOrg.includes('group') || lowerOrg.includes('solutions')) {
+                return 'card-consulting';
+            } else {
+                return 'card-others';
+            }
+        }
+        
+        // Get placeholder color based on organization name
+        function getPlaceholderColor(organization) {
+            const hash = organization.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const colorIndex = hash % 10 + 1;
+            return `org-placeholder-${colorIndex}`;
+        }
+        
+        // Filter jobs (remove expired jobs and apply search)
+        function filterJobs() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            // Get current date and add one day
+            const oneDayAfterToday = new Date();
+            oneDayAfterToday.setDate(oneDayAfterToday.getDate() + 1);
+            
+            const filteredJobs = jobs.filter(job => {
+                // Check if job has a deadline
+                if (!job.deadline) return true;
+                
+                // Parse deadline date
+                const deadlineDate = parseDate(job.deadline);
+                
+                // If date parsing failed, include the job
+                if (!deadlineDate) {
+                    console.warn(`Could not parse date: ${job.deadline} for job: ${job.title}`);
+                    return true;
+                }
+                
+                // Remove job if deadline is more than one day in the past
+                if (deadlineDate < oneDayAfterToday) {
+                    return false;
+                }
+                
+                // Apply search filter
+                if (searchTerm) {
+                    return job.title.toLowerCase().includes(searchTerm) ||
+                           job.organization.toLowerCase().includes(searchTerm) ||
+                           (job.location && job.location.toLowerCase().includes(searchTerm));
+                }
+                
+                return true;
+            });
+            
+            displayJobs(filteredJobs);
+        }
+        
+        // Display jobs on the page
+        function displayJobs(jobsToDisplay) {
+            const container = document.getElementById('jobsContainer');
+            
+            if (jobsToDisplay.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-3 text-center py-12">
+                        <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-200 max-w-md mx-auto">
+                            <i class="fas fa-search text-4xl text-gray-400 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-gray-700 mb-2">No matching jobs found</h3>
+                            <p class="text-gray-500">Try adjusting your search criteria or check back later for new opportunities.</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort jobs by deadline (soonest first)
+            jobsToDisplay.sort((a, b) => {
+                const dateA = parseDate(a.deadline) || new Date('9999-12-31');
+                const dateB = parseDate(b.deadline) || new Date('9999-12-31');
+                return dateA - dateB;
+            });
+
+            container.innerHTML = jobsToDisplay.map((job, index) => {
+                // Format deadline date
+                let formattedDeadline = job.deadline;
+                if (job.deadline) {
+                    const deadlineDate = parseDate(job.deadline);
+                    if (deadlineDate && !isNaN(deadlineDate.getTime())) {
+                        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                        formattedDeadline = deadlineDate.toLocaleDateString('en-US', options);
+                    }
+                }
+                
+                // Get organization logo
+                const logoUrl = getOrgLogo(job.organization);
+                const placeholderColor = getPlaceholderColor(job.organization);
+                const cardClass = getCardClass(job.organization);
+                
+                // Calculate days until deadline for badge
+                let daysUntilDeadline = '';
+                if (job.deadline) {
+                    const deadlineDate = parseDate(job.deadline);
+                    if (deadlineDate) {
+                        const today = new Date();
+                        const diffTime = deadlineDate.getTime() - today.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        if (diffDays <= 3) {
+                            daysUntilDeadline = `<span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                ${diffDays} day${diffDays !== 1 ? 's' : ''} left
+                            </span>`;
+                        } else if (diffDays <= 7) {
+                            daysUntilDeadline = `<span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                ${diffDays} day${diffDays !== 1 ? 's' : ''} left
+                            </span>`;
+                        }
+                    }
+                }
+                
+                return `
+                <div class="job-card ${cardClass} animate-fade-in-up" style="animation-delay: ${index * 0.1}s;">
+                    <div class="p-6">
+                        <div class="flex items-start mb-4">
+                            ${logoUrl ? 
+                                `<img src="${logoUrl}" alt="${job.organization} logo" class="org-logo">` : 
+                                `<div class="org-logo-placeholder ${placeholderColor}">${job.organization.charAt(0)}</div>`
+                            }
+                            <div class="ml-4 flex-1">
+                                <div class="flex items-start">
+                                    <h3 class="text-xl font-bold text-gray-900 leading-tight">${job.title}</h3>
+                                    ${daysUntilDeadline}
+                                </div>
+                                <p class="text-lg font-semibold text-indigo-600 mt-1">${job.organization}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-5 space-y-3">
+                            ${job.location ? `
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-map-marker-alt mr-2 text-sm"></i>
+                                <span class="text-sm">${job.location}</span>
+                            </div>` : ''}
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-calendar-alt mr-2 text-sm"></i>
+                                <span class="text-sm">Deadline: ${formattedDeadline}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="border-t border-gray-100 pt-4">
+                            <div class="flex justify-between items-center">
+                                <div class="text-sm text-gray-500">
+                                    <i class="far fa-clock mr-1"></i>
+                                    Posted: ${new Date().toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
+                        <a href="${job.sourceurl}" target="_blank" 
+                           class="w-full flex items-center justify-center btn-gradient-blue text-white py-3 px-4 rounded-lg transition-all duration-200 text-sm font-medium">
+                            <span>View Details</span>
+                            <i class="fas fa-external-link-alt ml-2 text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            `}).join('');
+        }
+        
+        // Setup event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            loadJobs();
+            
+            document.getElementById('searchInput').addEventListener('input', filterJobs);
+            document.getElementById('refreshBtn').addEventListener('click', loadJobs);
+            
+            // Auto-refresh every hour
+            setInterval(loadJobs, 3600000);
+        });
+    </script>
+</body>
+</html>
