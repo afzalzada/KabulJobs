@@ -17,6 +17,7 @@
             transition: all 0.3s ease;
             border-radius: 12px;
             overflow: hidden;
+            border: 1px solid #e5e7eb;
         }
         
         .job-card:hover {
@@ -51,19 +52,105 @@
             border-radius: 8px;
             padding: 2px;
             background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+        
+        /* Colorful placeholder circles */
+        .org-placeholder-1 { background-color: #f59e0b; } /* Orange */
+        .org-placeholder-2 { background-color: #ef4444; } /* Red */
+        .org-placeholder-3 { background-color: #10b981; } /* Green */
+        .org-placeholder-4 { background-color: #3b82f6; } /* Blue */
+        .org-placeholder-5 { background-color: #8b5cf6; } /* Purple */
+        .org-placeholder-6 { background-color: #ec4899; } /* Pink */
+        .org-placeholder-7 { background-color: #f97316; } /* Amber */
+        .org-placeholder-8 { background-color: #06b6d4; } /* Cyan */
+        .org-placeholder-9 { background-color: #f59e0b; } /* Orange */
+        .org-placeholder-10 { background-color: #ef4444; } /* Red */
         
         .org-logo-placeholder {
             width: 40px;
             height: 40px;
-            background-color: #f3f4f6;
-            border: 1px solid #e5e7eb;
             border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 18px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Background colors for job cards based on organization type */
+        .card-education { background-color: #f8fafc; border-left: 4px solid #10b981; }
+        .card-healthcare { background-color: #f8fafc; border-left: 4px solid #ef4444; }
+        .card-government { background-color: #f8fafc; border-left: 4px solid #3b82f6; }
+        .card-banking { background-color: #f8fafc; border-left: 4px solid #8b5cf6; }
+        .card-construction { background-color: #f8fafc; border-left: 4px solid #f59e0b; }
+        .card-telecom { background-color: #f8fafc; border-left: 4px solid #06b6d4; }
+        .card-consulting { background-color: #f8fafc; border-left: 4px solid #ec4899; }
+        .card-others { background-color: #f8fafc; border-left: 4px solid #f97316; }
+        
+        /* Gradient buttons */
+        .btn-gradient-blue { background: linear-gradient(45deg, #3b82f6, #2563eb); }
+        .btn-gradient-green { background: linear-gradient(45deg, #10b981, #059669); }
+        .btn-gradient-red { background: linear-gradient(45deg, #ef4444, #dc2626); }
+        .btn-gradient-purple { background: linear-gradient(45deg, #8b5cf6, #7c3aed); }
+        
+        /* Animated search bar */
+        .search-bar {
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+            background-color: #f8fafc;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .search-bar input {
+            padding: 12px 20px;
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 16px;
+            color: #374151;
+        }
+        
+        .search-bar i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
             color: #6b7280;
+            font-size: 18px;
+        }
+        
+        /* Floating refresh button */
+        .refresh-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 100;
+            background: linear-gradient(45deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+        
+        .refresh-btn:active {
+            transform: scale(0.95);
         }
     </style>
 </head>
@@ -88,12 +175,10 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
                 <div class="lg:col-span-2">
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fas fa-search text-gray-400"></i>
-                        </div>
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
                         <input id="searchInput" type="text" placeholder="Search jobs, organizations..." 
-                               class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                               class="block w-full pl-10 pr-3 py-3 border border-transparent focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
                 </div>
                 
@@ -120,7 +205,7 @@
                 <li>Click "Refresh" on this website to see the latest jobs</li>
             </ol>
             <p class="mt-4 text-sm text-blue-600">
-                For organizations without logos, a placeholder will be displayed automatically.
+                For organizations without logos, a colorful placeholder will be displayed automatically.
             </p>
         </div>
 
@@ -134,9 +219,14 @@
         </footer>
     </div>
 
+    <!-- Floating Refresh Button -->
+    <button class="refresh-btn" onclick="document.getElementById('refreshBtn').click()">
+        <i class="fas fa-sync-alt"></i>
+    </button>
+
     <script>
         // Replace with your published Google Sheet CSV URL
-        const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRt2yeLk-C6RA95UxBYoewJN9BEigEN5nF2LLvJDs7LkI5QSvYivRz3D8MyJrw1lqWuewuamLNRjVdX/pub?output=csv';
+        const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRt2yeLk-C6RA95UxBYoewJN9BEiGEN5nF2LLvDJs7LkI5QSvYivRz3D8MyJrw1qWuewUamLNRjVdX/pub?output=csv';
         
         // Organization logo mapping - Add all your organization logos here
         const orgLogos = {
@@ -258,6 +348,70 @@
             return jobs;
         }
         
+        // Parse date string with multiple format support
+        function parseDate(dateString) {
+            if (!dateString) return null;
+            
+            // Try different date formats
+            const formats = [
+                // YYYY-MM-DD
+                () => {
+                    const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+                    if (match) {
+                        return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
+                    }
+                    return null;
+                },
+                // DD-MM-YYYY
+                () => {
+                    const match = dateString.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+                    if (match) {
+                        return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
+                    }
+                    return null;
+                },
+                // MM/DD/YYYY
+                () => {
+                    const match = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                    if (match) {
+                        return new Date(parseInt(match[3]), parseInt(match[1]) - 1, parseInt(match[2]));
+                    }
+                    return null;
+                },
+                // DD/MM/YYYY
+                () => {
+                    const match = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                    if (match) {
+                        return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
+                    }
+                    return null;
+                },
+                // Month DD, YYYY (e.g., "September 5, 2025")
+                () => {
+                    const monthNames = ["January", "February", "March", "April", "May", "June",
+                                      "July", "August", "September", "October", "November", "December"];
+                    const regex = new RegExp(`^(${monthNames.join('|')})\\s+(\\d{1,2}),?\\s+(\\d{4})$`, 'i');
+                    const match = dateString.match(regex);
+                    if (match) {
+                        const monthIndex = monthNames.findIndex(name => name.toLowerCase() === match[1].toLowerCase());
+                        return new Date(parseInt(match[3]), monthIndex, parseInt(match[2]));
+                    }
+                    return null;
+                }
+            ];
+            
+            // Try each format
+            for (const format of formats) {
+                const date = format();
+                if (date && !isNaN(date.getTime())) {
+                    return date;
+                }
+            }
+            
+            // If no format matches, return null
+            return null;
+        }
+        
         // Get organization logo URL
         function getOrgLogo(organization) {
             // First check if the organization has a specific logo URL in the data
@@ -267,6 +421,35 @@
             
             // Return null if no logo found, which will show the placeholder
             return null;
+        }
+        
+        // Determine card color based on organization type
+        function getCardClass(organization) {
+            const lowerOrg = organization.toLowerCase();
+            if (lowerOrg.includes('university') || lowerOrg.includes('school')) {
+                return 'card-education';
+            } else if (lowerOrg.includes('health') || lowerOrg.includes('medical') || lowerOrg.includes('hospital')) {
+                return 'card-healthcare';
+            } else if (lowerOrg.includes('ministry') || lowerOrg.includes('government')) {
+                return 'card-government';
+            } else if (lowerOrg.includes('bank') || lowerOrg.includes('financial')) {
+                return 'card-banking';
+            } else if (lowerOrg.includes('construction') || lowerOrg.includes('building')) {
+                return 'card-construction';
+            } else if (lowerOrg.includes('telecom') || lowerOrg.includes('mobile') || lowerOrg.includes('communication')) {
+                return 'card-telecom';
+            } else if (lowerOrg.includes('consulting') || lowerOrg.includes('management')) {
+                return 'card-consulting';
+            } else {
+                return 'card-others';
+            }
+        }
+        
+        // Get placeholder color based on organization name
+        function getPlaceholderColor(organization) {
+            const hash = organization.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const colorIndex = hash % 10 + 1;
+            return `org-placeholder-${colorIndex}`;
         }
         
         // Filter jobs (remove expired jobs and apply search)
@@ -281,8 +464,14 @@
                 // Check if job has a deadline
                 if (!job.deadline) return true;
                 
-                // Parse deadline date
-                const deadlineDate = new Date(job.deadline);
+                // Parse deadline date with improved parsing
+                const deadlineDate = parseDate(job.deadline);
+                
+                // If date parsing failed, include the job
+                if (!deadlineDate) {
+                    console.warn(`Could not parse date: ${job.deadline} for job: ${job.title}`);
+                    return true;
+                }
                 
                 // Remove job if deadline is more than one day in the past
                 if (deadlineDate < oneDayAfterToday) {
@@ -314,21 +503,25 @@
                 // Format deadline date
                 let formattedDeadline = job.deadline;
                 if (job.deadline) {
-                    const deadlineDate = new Date(job.deadline);
-                    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-                    formattedDeadline = deadlineDate.toLocaleDateString('en-US', options);
+                    const deadlineDate = parseDate(job.deadline);
+                    if (deadlineDate && !isNaN(deadlineDate.getTime())) {
+                        const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                        formattedDeadline = deadlineDate.toLocaleDateString('en-US', options);
+                    }
                 }
                 
                 // Get organization logo
                 const logoUrl = getOrgLogo(job.organization);
+                const placeholderColor = getPlaceholderColor(job.organization);
+                const cardClass = getCardClass(job.organization);
                 
                 return `
-                <div class="job-card bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
+                <div class="job-card ${cardClass} bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
                     <div class="p-6">
                         <div class="flex items-start mb-3">
                             ${logoUrl ? 
                                 `<img src="${logoUrl}" alt="${job.organization} logo" class="org-logo mr-3">` : 
-                                `<div class="org-logo-placeholder mr-3">${job.organization.charAt(0)}</div>`
+                                `<div class="org-logo-placeholder ${placeholderColor} mr-3">${job.organization.charAt(0)}</div>`
                             }
                             <div class="flex-1">
                                 <h3 class="text-xl font-bold text-gray-900 leading-tight">${job.title}</h3>
@@ -336,7 +529,12 @@
                             </div>
                         </div>
                         
-                        <div class="mb-4">
+                        <div class="mb-4 space-y-2">
+                            ${job.location ? `
+                            <div class="flex items-center text-gray-600">
+                                <i class="fas fa-map-marker-alt mr-2 text-sm"></i>
+                                <span class="text-sm">${job.location}</span>
+                            </div>` : ''}
                             <div class="flex items-center text-gray-600">
                                 <i class="fas fa-calendar-alt mr-2 text-sm"></i>
                                 <span class="text-sm">Deadline: ${formattedDeadline}</span>
@@ -354,7 +552,7 @@
                     
                     <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
                         <a href="${job.sourceurl}" target="_blank" 
-                           class="w-full flex items-center justify-center bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm font-medium">
+                           class="w-full flex items-center justify-center btn-gradient-blue text-white py-2 px-4 rounded-lg hover:shadow-md transition-all duration-200 text-sm font-medium">
                             <span>View Details</span>
                             <i class="fas fa-external-link-alt ml-2 text-xs"></i>
                         </a>
