@@ -166,9 +166,7 @@
             <p class="text-xl text-gray-600 max-w-3xl mx-auto">
                 Job opportunities in Afghanistan from top organizations
             </p>
-            <p class="text-sm text-gray-500 mt-2">
-                Data powered by Google Sheets - Updated in real-time
-            </p>
+            
         </header>
 
         <!-- Search and Filters -->
@@ -195,20 +193,6 @@
             <div class="col-span-3 text-center py-8">Loading jobs...</div>
         </div>
 
-        <!-- Instructions -->
-        <div class="mt-12 bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 class="text-lg font-semibold text-blue-800 mb-3">How to Update Job Listings</h3>
-            <ol class="list-decimal list-inside text-blue-700 space-y-2">
-                <li>Open the <a href="https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit" target="_blank" class="text-blue-600 underline">Google Sheet</a></li>
-                <li>Add or update job postings in the spreadsheet</li>
-                <li>Include organization logo URLs when available</li>
-                <li>Click "Refresh" on this website to see the latest jobs</li>
-            </ol>
-            <p class="mt-4 text-sm text-blue-600">
-                For organizations without logos, a colorful placeholder will be displayed automatically.
-            </p>
-        </div>
-
         <!-- Footer -->
         <footer class="mt-16 text-center text-gray-500">
             <div class="border-t border-gray-200 pt-8">
@@ -226,7 +210,7 @@
 
     <script>
         // Replace with your published Google Sheet CSV URL
-        const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRt2yeLk-C6RA95UxBYoewJN9BEiGEN5nF2LLvDJs7LkI5QSvYivRz3D8MyJrw1qWuewUamLNRjVdX/pub?output=csv';
+        const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRt2yeLk-C6RA95UxBYoewJN9BEigEN5nF2LLvJDs7LkI5QSvYivRz3D8MyJrw1lqWuewuamLNRjVdX/pub?output=csv';
         
         // Organization logo mapping - Add all your organization logos here
         const orgLogos = {
