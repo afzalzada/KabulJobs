@@ -346,7 +346,7 @@
     </button>
 
     <script>
-        // Google Sheets CSV URL
+        // Google Sheets CSV URL - This is the correct format
         const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRt2yeLk-C6RA95UxBYoewJN9BEigEN5nF2LLvJDs7LkI5QSvYivRz3D8MyJrw1lqWuewuamLNRjVdX/pub?output=csv';
         
         // Organization logo mapping
@@ -437,6 +437,7 @@
                 // Add cache busting and proper headers
                 const cacheBustedUrl = `${GOOGLE_SHEETS_CSV_URL}&_=${Date.now()}`;
                 
+                // Try to fetch the data
                 const response = await fetch(cacheBustedUrl, {
                     method: 'GET',
                     mode: 'cors',
@@ -454,7 +455,7 @@
                 const text = await response.text();
                 console.log('Raw CSV data received:', text.substring(0, 200) + '...');
                 
-                // Check if the response is HTML (which indicates an error)
+                // Check if we got HTML instead of CSV
                 if (text.trim().startsWith('<!DOCTYPE html') || text.trim().startsWith('<html')) {
                     throw new Error('Received HTML instead of CSV data. The Google Sheets URL might be incorrect or private.');
                 }
