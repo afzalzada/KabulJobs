@@ -3,558 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KabulJobs - Job Aggregator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>KabulJobs</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
         }
-        
-        .job-card {
-            transition: all 0.3s ease;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid #e5e7eb;
-        }
-        
-        .job-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-        
-        .logo-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-        
-        .logo-text {
-            font-weight: 700;
-            font-size: 2.5rem;
-            color: #c2185b;
-            margin: 0;
-        }
-        
-        .logo-text span {
-            color: #1976d2;
-        }
-        
-        .org-logo {
-            width: 40px;
-            height: 40px;
-            object-fit: contain;
-            border: 1px solid #e5e7eb;
+        .job {
+            background: white;
+            margin: 10px 0;
+            padding: 15px;
             border-radius: 8px;
-            padding: 2px;
-            background-color: white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        
-        /* Colorful placeholder circles */
-        .org-placeholder-1 { background-color: #f59e0b; } /* Orange */
-        .org-placeholder-2 { background-color: #ef4444; } /* Red */
-        .org-placeholder-3 { background-color: #10b981; } /* Green */
-        .org-placeholder-4 { background-color: #3b82f6; } /* Blue */
-        .org-placeholder-5 { background-color: #8b5cf6; } /* Purple */
-        .org-placeholder-6 { background-color: #ec4899; } /* Pink */
-        .org-placeholder-7 { background-color: #f97316; } /* Amber */
-        .org-placeholder-8 { background-color: #06b6d4; } /* Cyan */
-        .org-placeholder-9 { background-color: #f59e0b; } /* Orange */
-        .org-placeholder-10 { background-color: #ef4444; } /* Red */
-        
-        .org-logo-placeholder {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
+        .job h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .job p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .job a {
+            display: inline-block;
+            margin-top: 10px;
+            color: #0066cc;
+            text-decoration: none;
             font-weight: bold;
-            color: white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
-        /* Background colors for job cards based on organization type */
-        .card-education { background-color: #f8fafc; border-left: 4px solid #10b981; }
-        .card-healthcare { background-color: #f8fafc; border-left: 4px solid #ef4444; }
-        .card-government { background-color: #f8fafc; border-left: 4px solid #3b82f6; }
-        .card-banking { background-color: #f8fafc; border-left: 4px solid #8b5cf6; }
-        .card-construction { background-color: #f8fafc; border-left: 4px solid #f59e0b; }
-        .card-telecom { background-color: #f8fafc; border-left: 4px solid #06b6d4; }
-        .card-consulting { background-color: #f8fafc; border-left: 4px solid #ec4899; }
-        .card-others { background-color: #f8fafc; border-left: 4px solid #f97316; }
-        
-        /* Gradient buttons */
-        .btn-gradient-blue { background: linear-gradient(45deg, #3b82f6, #2563eb); }
-        .btn-gradient-green { background: linear-gradient(45deg, #10b981, #059669); }
-        .btn-gradient-red { background: linear-gradient(45deg, #ef4444, #dc2626); }
-        .btn-gradient-purple { background: linear-gradient(45deg, #8b5cf6, #7c3aed); }
-        
-        /* Animated search bar */
-        .search-bar {
-            position: relative;
-            overflow: hidden;
-            border-radius: 20px;
-            background-color: #f8fafc;
-            border: 1px solid #e5e7eb;
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
-        
-        .search-bar input {
-            padding: 12px 20px;
-            width: 100%;
-            border: none;
-            outline: none;
-            background: transparent;
-            font-size: 16px;
-            color: #374151;
-        }
-        
-        .search-bar i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #6b7280;
-            font-size: 18px;
-        }
-        
-        /* Floating refresh button */
-        .refresh-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 100;
-            background: linear-gradient(45deg, #3b82f6, #2563eb);
-            color: white;
-            border: none;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .refresh-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-        }
-        
-        .refresh-btn:active {
-            transform: scale(0.95);
+        .header h1 {
+            margin: 0;
+            color: #c2185b;
         }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header -->
-        <header class="text-center mb-12">
-            <div class="logo-container">
-                <div>
-                    <h1 class="logo-text">Kabul<span>Jobs</span></h1>
-                </div>
-            </div>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-                Job opportunities in Afghanistan from top organizations
-            </p>
-            
-        </header>
-
-        <!-- Search and Filters -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
-                <div class="lg:col-span-2">
-                    <div class="search-bar">
-                        <i class="fas fa-search"></i>
-                        <input id="searchInput" type="text" placeholder="Search jobs, organizations..." 
-                               class="block w-full pl-10 pr-3 py-3 border border-transparent focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                </div>
-                
-                <div class="flex gap-2">
-                    <button id="refreshBtn" class="flex-1 bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700 transition-colors duration-200 flex items-center justify-center">
-                        <i class="fas fa-sync-alt mr-2"></i> Refresh
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Jobs Grid -->
-        <div id="jobsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="col-span-3 text-center py-8">Loading jobs...</div>
-        </div>
-
-        <!-- Footer -->
-        <footer class="mt-16 text-center text-gray-500">
-            <div class="border-t border-gray-200 pt-8">
-                <p class="mb-4">KabulJobs - Connecting talent with opportunities across Afghanistan</p>
-                <p class="text-sm">Job listings are sourced from various organizations across Afghanistan.</p>
-                <p class="mt-4 text-xs">© 2025 KabulJobs. All rights reserved.</p>
-            </div>
-        </footer>
+<body>
+    <div class="header">
+        <h1>Kabul<span style="color:#1976d2">Jobs</span></h1>
+        <p>Job opportunities in Afghanistan</p>
     </div>
 
-    <!-- Floating Refresh Button -->
-    <button class="refresh-btn" onclick="document.getElementById('refreshBtn').click()">
-        <i class="fas fa-sync-alt"></i>
-    </button>
+    <div id="jobs">
+        <!-- Jobs will be displayed here -->
+    </div>
 
     <script>
-        // Replace with your published Google Sheet CSV URL
-        const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRt2yeLk-C6RA95UxBYoewJN9BEigEN5nF2LLvJDs7LkI5QSvYivRz3D8MyJrw1lqWuewuamLNRjVdX/pub?output=csv';
-        
-        // Organization logo mapping - Add all your organization logos here
-        const orgLogos = {
-            "Terre des hommes": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Time Height Services Pvt": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/6565bf8b3b5316139bf4cc9a/1710410987784",
-            "KELC (Khpalwak Etihad Logistic and Constriction company)": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/6787aa07cac5ef1791f458d5/1742707954611",
-            "UA Telecom": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/000000000000000000008834/cropped_1614426064162",
-            "IFRC": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/000000000000000000008265/1734385587472",
-            "DABS": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/000000000000000000000030/4fdef504f7d93b1324493d31c1ab2603",
-            "UN-Habitat": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/0000000000000000000005701/1729489943874",
-            "OXUS Consulting Group": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/000000000000000000006908/pic-58328",
-            "Advance Trading Company": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/67303b99cac5ef17910ec65d/1731826630395",
-            "Kabul Chinar Construction Company": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Aurum Afghanistan Financial Company (AurumPay)": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/6715d8b6cac5ef1791cb4edc/1755674335308",
-            "Médecins Sans Frontières  (MSF)": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/000000000000000000001444/f9bbb114cf6c270674f64cec005c44a9",
-            "Afghanistan International Bank": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/000000000000000000000297/bdc52e7588f9e1c7a497618a0144646c",
-            "AFTEL": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/000000000000000000000146/d98a273c9ae2522908d1bf72f8e8b23c",
-            "ZNCC": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/000000000000000000007922/cropped_1605674959130",
-            "Help Build Tomorrow (HBT)": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Etoile Dasie (Sunich)": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Ministry of Urban Development and Housing (MUDH)": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "NETLINKS": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/000000000000000000000004/1691568056111",
-            "Reshtin Asia Project Management Services": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Etisalat Afghanistan": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/000000000000000000008199/cropped_1648642282463",
-            "Aurum Afghanistan Mobile Money Services Company": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/6715d8b6cac5ef1791cb4edc/1732428509407",
-            "Urban Water Supply & Sewage State-Owned Corporation UWASS.so...": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/0000000000000000000005767/cropped_1623304246707",
-            "Ministry of Energy & Water/MSU": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Insta Telecom": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/000000000000000000002279/profile_cropped_0109c35a28c8c8b7c179a12d8342991557642592803",
-            "NTT Core": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Zdakra (Ulearna) Learning Center": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/689bfd93195d6e47e6ff4e9c/1755088468647",
-            "Afghan United Bank": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/000000000000000000000616/d217eb4ea33d4b93e172f5746ade964d",
-            "Speenkai": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/665f6e92838f7270e3d701b7/1719873329932",
-            "Aryob Speenghar Construction Company (ASCC)": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/689d852215703f0e5334690b/1755164593261",
-            "AfghanPAY Services Company": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/65d5c5cc63feb5fbc645f6d9/1755325975080",
-            "Refah Al Alami Trading consultancy services": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/619218273750ef02f6332ba8/1726035139482",
-            "I Engineering Group": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Shahab Niru Electrical Company": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/5e3519139d8b8d03f7cdcc5f/1742112278908",
-            "Afghan Wireless Communication Company": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/0000000000000000000005019/fa7aa9da0a3125344b228760a7741fe3",
-            "Islamic Relief Worldwide": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/6232d4364e926f03c2aa6c93/cropped_1648642994897",
-            "PARSA Technologies": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Tesla Afghanistan Consultancy Services": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Pashtany Bank": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/000000000000000000000474/5735d2110884ab526525446803b083",
-            "Sky Travel & Tours": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/000000000000000000000848/1714625711600",
-            "NGR.DABS": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "PomTech ICT Solutions": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/000000000000000000000964/profile_cropped_157232331986",
-            "MISFA Ltd.": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/000000000000000000000360/cropped_1575952754481",
-            "Crowe Horwath Afghanistan": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/5fb2e4eb8b256825a3c7d6af/profile_cropped_1605582080895",
-            "Jahan University": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/0000000000000000000005560/72868a2bb48a61401b02bc2e5f0f13b5",
-            "MOBY Afghanistan": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/000000000000000000000441/1723875123401",
-            "Handicap International (HI)": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Ghazanfar Bank": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/000000000000000000000175/cropped_1583391913176",
-            "Soholat.com": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/00000000000000000000010007/cropped_1587028894960",
-            "Mohib Advance Design Construction Company": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Samstar": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Women for Women International": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/5ce0f8a34192dd04305d40dc/1742827979768",
-            "Zardana": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/6880a6b5a8eeee1b3b5cf3d9/1753600578874",
-            "Izzat Ibrahim": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/675c1e3ccac5ef17917e285b/1734929156948",
-            "Brand Construction Company": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Afghan Ziba": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Mezan Sultani Group Ltd": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/6856613da8eeee1b3be945b5/1751970499431",
-            "ICube Innovators": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Seekaram.pick": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/687b55a0948af6e169bebdc5/1752924865565",
-            "Hushmand Shahar Information Technology Service Company": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/67b184ba0d17e1a9426c45e1/1739780302642",
-            "Afghanistan English Campus": "https://d3bur0e9fyg6zq.cloudfront.net/assets/img/img/company.jpg",
-            "Global Star Security Service (GSS)": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyBusinessUnits/66c038d3cac5ef1791e1074c/1747116628529",
-            "Unlock Immigration": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/676d12cd0d17e1a942a54c09/1735418130270",
-            "Arfoon": "https://dmaatbwjhn7f1.cloudfront.net/uploads/companyProfilePics/64f84adffc43b08182204531/1694242150745",
-            "MEDAIR": "https://wazifaha.org/media/photos/download_KUbx3q2.png",
-            "Danish Refugee Council": "https://wazifaha.org/media/photos/_IMG_000000_000000_jpxRQ7k.jpg",
-            "Action Against Hunger": "https://wazifaha.org/media/photos/Action_Against_Hunger.jpg",
-            "Laspay": "https://wazifaha.org/media/photos/FB_IMG_1756106317618.jpg",
-            "INTERSOS": "https://wazifaha.org/media/photos/Intersos_JD56whV.jpg",
-            "Brigh future publishers": "https://wazifaha.org/static/assets/img/com_new.png",
-            "New Link Tourist & Travel": "https://wazifaha.org/static/assets/img/com_new.png",
-            "People In Need": "https://wazifaha.org/media/photos/People_In_Need.jpg",
-            "Salamat Co Ltd": "https://wazifaha.org/static/assets/img/com_new.png"
-        };
-        
-        let jobs = [];
-        
-        // Load jobs from Google Sheets
-        async function loadJobs() {
-            try {
-                const response = await fetch(GOOGLE_SHEETS_CSV_URL);
-                const text = await response.text();
-                jobs = parseCSV(text);
-                filterJobs();
-            } catch (error) {
-                console.error('Error loading jobs:', error);
-                document.getElementById('jobsContainer').innerHTML = 
-                    '<div class="col-span-3 text-center py-8 text-red-600">Error loading job data. Please check back later.</div>';
+        // Your job data - update this manually when you find new jobs
+        const jobs = [
+            {
+                title: "Safeguarding Officer",
+                organization: "AADA",
+                location: "Kabul",
+                deadline: "2025-09-05",
+                sourceUrl: "https://www.acbar.org/jobs/123"
+            },
+            {
+                title: "Senior Accountant",
+                organization: "UNICEF",
+                location: "Kabul",
+                deadline: "2025-09-10",
+                sourceUrl: "https://www.jobs.af/job/456"
             }
-        }
-        
-        // Parse CSV data
-        function parseCSV(csv) {
-            const lines = csv.split('\n');
-            const headers = lines[0].split(',');
-            const jobs = [];
-            
-            for (let i = 1; i < lines.length; i++) {
-                if (lines[i].trim() === '') continue;
-                
-                const values = lines[i].split(',');
-                const job = {};
-                
-                headers.forEach((header, index) => {
-                    // Clean the header name
-                    const cleanHeader = header.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-                    job[cleanHeader] = values[index] ? values[index].trim() : '';
-                });
-                
-                // Only include jobs with title and source URL
-                if (job.title && job.sourceurl) {
-                    jobs.push(job);
-                }
-            }
-            
-            return jobs;
-        }
-        
-        // Parse date string with multiple format support
-        function parseDate(dateString) {
-            if (!dateString) return null;
-            
-            // Try different date formats
-            const formats = [
-                // YYYY-MM-DD
-                () => {
-                    const match = dateString.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-                    if (match) {
-                        return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
-                    }
-                    return null;
-                },
-                // DD-MM-YYYY
-                () => {
-                    const match = dateString.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-                    if (match) {
-                        return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
-                    }
-                    return null;
-                },
-                // MM/DD/YYYY
-                () => {
-                    const match = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-                    if (match) {
-                        return new Date(parseInt(match[3]), parseInt(match[1]) - 1, parseInt(match[2]));
-                    }
-                    return null;
-                },
-                // DD/MM/YYYY
-                () => {
-                    const match = dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-                    if (match) {
-                        return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
-                    }
-                    return null;
-                },
-                // Month DD, YYYY (e.g., "September 5, 2025")
-                () => {
-                    const monthNames = ["January", "February", "March", "April", "May", "June",
-                                      "July", "August", "September", "October", "November", "December"];
-                    const regex = new RegExp(`^(${monthNames.join('|')})\\s+(\\d{1,2}),?\\s+(\\d{4})$`, 'i');
-                    const match = dateString.match(regex);
-                    if (match) {
-                        const monthIndex = monthNames.findIndex(name => name.toLowerCase() === match[1].toLowerCase());
-                        return new Date(parseInt(match[3]), monthIndex, parseInt(match[2]));
-                    }
-                    return null;
-                }
-            ];
-            
-            // Try each format
-            for (const format of formats) {
-                const date = format();
-                if (date && !isNaN(date.getTime())) {
-                    return date;
-                }
-            }
-            
-            // If no format matches, return null
-            return null;
-        }
-        
-        // Get organization logo URL
-        function getOrgLogo(organization) {
-            // First check if the organization has a specific logo URL in the data
-            if (orgLogos[organization]) {
-                return orgLogos[organization];
-            }
-            
-            // Return null if no logo found, which will show the placeholder
-            return null;
-        }
-        
-        // Determine card color based on organization type
-        function getCardClass(organization) {
-            const lowerOrg = organization.toLowerCase();
-            if (lowerOrg.includes('university') || lowerOrg.includes('school')) {
-                return 'card-education';
-            } else if (lowerOrg.includes('health') || lowerOrg.includes('medical') || lowerOrg.includes('hospital')) {
-                return 'card-healthcare';
-            } else if (lowerOrg.includes('ministry') || lowerOrg.includes('government')) {
-                return 'card-government';
-            } else if (lowerOrg.includes('bank') || lowerOrg.includes('financial')) {
-                return 'card-banking';
-            } else if (lowerOrg.includes('construction') || lowerOrg.includes('building')) {
-                return 'card-construction';
-            } else if (lowerOrg.includes('telecom') || lowerOrg.includes('mobile') || lowerOrg.includes('communication')) {
-                return 'card-telecom';
-            } else if (lowerOrg.includes('consulting') || lowerOrg.includes('management')) {
-                return 'card-consulting';
-            } else {
-                return 'card-others';
-            }
-        }
-        
-        // Get placeholder color based on organization name
-        function getPlaceholderColor(organization) {
-            const hash = organization.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-            const colorIndex = hash % 10 + 1;
-            return `org-placeholder-${colorIndex}`;
-        }
-        
-        // Filter jobs (remove expired jobs and apply search)
-        function filterJobs() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
-            // Get current date and add one day (24 hours * 60 minutes * 60 seconds * 1000 ms)
-            const oneDayAfterToday = new Date();
-            oneDayAfterToday.setDate(oneDayAfterToday.getDate() + 1);
-            
-            const filteredJobs = jobs.filter(job => {
-                // Check if job has a deadline
-                if (!job.deadline) return true;
-                
-                // Parse deadline date with improved parsing
-                const deadlineDate = parseDate(job.deadline);
-                
-                // If date parsing failed, include the job
-                if (!deadlineDate) {
-                    console.warn(`Could not parse date: ${job.deadline} for job: ${job.title}`);
-                    return true;
-                }
-                
-                // Remove job if deadline is more than one day in the past
-                if (deadlineDate < oneDayAfterToday) {
-                    return false;
-                }
-                
-                // Apply search filter
-                if (searchTerm) {
-                    return job.title.toLowerCase().includes(searchTerm) ||
-                           job.organization.toLowerCase().includes(searchTerm);
-                }
-                
-                return true;
-            });
-            
-            displayJobs(filteredJobs);
-        }
-        
-        // Display jobs on the page
-        function displayJobs(jobsToDisplay) {
-            const container = document.getElementById('jobsContainer');
-            
-            if (jobsToDisplay.length === 0) {
-                container.innerHTML = '<div class="col-span-3 text-center py-8">No active jobs found. Check back later for new opportunities.</div>';
-                return;
-            }
+        ];
 
-            container.innerHTML = jobsToDisplay.map(job => {
-                // Format deadline date
-                let formattedDeadline = job.deadline;
-                if (job.deadline) {
-                    const deadlineDate = parseDate(job.deadline);
-                    if (deadlineDate && !isNaN(deadlineDate.getTime())) {
-                        const options = { year: 'numeric', month: 'short', day: 'numeric' };
-                        formattedDeadline = deadlineDate.toLocaleDateString('en-US', options);
-                    }
-                }
-                
-                // Get organization logo
-                const logoUrl = getOrgLogo(job.organization);
-                const placeholderColor = getPlaceholderColor(job.organization);
-                const cardClass = getCardClass(job.organization);
-                
-                return `
-                <div class="job-card ${cardClass} bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg transition-all duration-300 overflow-hidden">
-                    <div class="p-6">
-                        <div class="flex items-start mb-3">
-                            ${logoUrl ? 
-                                `<img src="${logoUrl}" alt="${job.organization} logo" class="org-logo mr-3">` : 
-                                `<div class="org-logo-placeholder ${placeholderColor} mr-3">${job.organization.charAt(0)}</div>`
-                            }
-                            <div class="flex-1">
-                                <h3 class="text-xl font-bold text-gray-900 leading-tight">${job.title}</h3>
-                                <p class="text-lg font-semibold text-indigo-600 mb-1">${job.organization}</p>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-4 space-y-2">
-                            ${job.location ? `
-                            <div class="flex items-center text-gray-600">
-                                <i class="fas fa-map-marker-alt mr-2 text-sm"></i>
-                                <span class="text-sm">${job.location}</span>
-                            </div>` : ''}
-                            <div class="flex items-center text-gray-600">
-                                <i class="fas fa-calendar-alt mr-2 text-sm"></i>
-                                <span class="text-sm">Deadline: ${formattedDeadline}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="border-t border-gray-100 pt-4">
-                            <div class="flex justify-between items-center">
-                                <div class="text-sm text-gray-500">
-                                    Posted: ${new Date().toLocaleDateString('en-US', {year: 'numeric', month: 'short', day: 'numeric'})}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-gray-50 px-6 py-4 border-t border-gray-100">
-                        <a href="${job.sourceurl}" target="_blank" 
-                           class="w-full flex items-center justify-center btn-gradient-blue text-white py-2 px-4 rounded-lg hover:shadow-md transition-all duration-200 text-sm font-medium">
-                            <span>View Details</span>
-                            <i class="fas fa-external-link-alt ml-2 text-xs"></i>
-                        </a>
-                    </div>
-                </div>
-            `}).join('');
-        }
+        // Display jobs
+        const jobsContainer = document.getElementById('jobs');
+        const today = new Date();
         
-        // Setup event listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            loadJobs();
-            
-            document.getElementById('searchInput').addEventListener('input', filterJobs);
-            document.getElementById('refreshBtn').addEventListener('click', loadJobs);
-            
-            // Auto-refresh every hour
-            setInterval(loadJobs, 3600000);
+        jobs.forEach(job => {
+            const deadline = new Date(job.deadline);
+            // Show only jobs with deadline in the future
+            if (deadline >= today) {
+                jobsContainer.innerHTML += `
+                    <div class="job">
+                        <h3>${job.title}</h3>
+                        <p><strong>Organization:</strong> ${job.organization}</p>
+                        <p><strong>Location:</strong> ${job.location}</p>
+                        <p><strong>Deadline:</strong> ${job.deadline}</p>
+                        <a href="${job.sourceUrl}" target="_blank">View Details</a>
+                    </div>
+                `;
+            }
         });
+
+        // If no jobs are displayed
+        if (jobsContainer.innerHTML === '') {
+            jobsContainer.innerHTML = '<p>No active jobs found. Check back later.</p>';
+        }
     </script>
 </body>
 </html>
