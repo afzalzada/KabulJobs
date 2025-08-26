@@ -346,7 +346,7 @@
     </button>
 
     <script>
-        // Replace with your published Google Sheet CSV URL
+        // Corrected Google Sheets CSV URL
         const GOOGLE_SHEETS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRt2yeLk-C6RA95UxBYoewJN9BEigEN5nF2LLvJDs7LkI5QSvYivRz3D8MyJrw1lqWuewuamLNRjVdX/pub?output=csv';
         
         // Organization logo mapping - All your organization logos
@@ -432,15 +432,30 @@
         // Load jobs from Google Sheets
         async function loadJobs() {
             try {
+                console.log('Attempting to fetch data from:', GOOGLE_SHEETS_CSV_URL);
                 const response = await fetch(GOOGLE_SHEETS_CSV_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const text = await response.text();
+                console.log('Raw CSV data received:', text.substring(0, 200) + '...');
                 jobs = parseCSV(text);
+                console.log('Parsed jobs:', jobs);
                 updateStatistics();
                 filterJobs();
             } catch (error) {
                 console.error('Error loading jobs:', error);
                 document.getElementById('jobsContainer').innerHTML = 
-                    '<div class="col-span-3 text-center py-12"><div class="text-red-600"><i class="fas fa-exclamation-triangle text-4xl mb-4"></i><h3 class="text-xl font-semibold">Error loading job data</h3><p class="text-gray-500 mt-2">Please check your internet connection and try again.</p></div></div>';
+                    `<div class="col-span-3 text-center py-12">
+                        <div class="bg-red-50 border border-red-200 rounded-xl p-8 max-w-md mx-auto">
+                            <i class="fas fa-exclamation-triangle text-4xl text-red-500 mb-4"></i>
+                            <h3 class="text-xl font-semibold text-red-700 mb-2">Failed to load job data</h3>
+                            <p class="text-red-600 mb-4">${error.message}</p>
+                            <p class="text-sm text-red-500">Please check the console for more details.</p>
+                        </div>
+                    </div>`;
             }
         }
         
